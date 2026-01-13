@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horoscope</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+</head>
+<body>
+    <!-- Audio Elements -->
+    <audio id="loop-audio-01" loop preload="auto">
+        <source src="assets/audio/loop/loop_01.aif" type="audio/aiff">
+    </audio>
+    <audio id="loop-audio-02" loop preload="auto">
+        <source src="assets/audio/loop/loop_02.aif" type="audio/aiff">
+    </audio>
+    
+    <!-- Static Background Image Layer -->
+    <div id="bg-image-layer"></div>
+    
+    <!-- Animated Glitch Layers Container -->
+    <div id="glitch-container"></div>
+    
+    <!-- Start Screen -->
+    <div class="start-banner" id="start-screen">
+        <div class="language-toggle">
+            <button class="lang-btn active" data-lang="de">DE</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <div class="intro-textbox">
+            <p class="intro-text" data-de="Hi, willkommen." data-en="Hi, welcome.">Hi, willkommen.</p>
+            <p class="intro-text" data-de="Was wäre, wenn ...." data-en="What if ....">Was wäre, wenn ....</p>
+            <p class="intro-text" data-de="du dir deine Zukunft selbst auswählen könntest?" data-en="you could choose your own future?">du dir deine Zukunft selbst auswählen könntest?</p>
+            <p class="intro-text" data-de="Probiers aus und tippe auf die Zukunftsszenarien, die für dich wünschenswert sind." data-en="Try it out and tap on the future scenarios that are desirable for you.">Probiers aus und tippe auf die Zukunftsszenarien, die für dich wünschenswert sind.</p>
+        </div>
+        <button class="start-button" data-de="START" data-en="START">START</button>
+    </div>
+
+    <!-- Scenario Screen 1 -->
+    <div class="scenario-container hidden" id="scenario-1">
+        <div class="page-counter">1/6</div>
+        <div class="content-grid">
+            <div class="scenario-box">
+                <p>This is a text for scenario one.</p>
+            </div>
+            <div class="scenario-box">
+                <p>This is a text for scenario two.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario Screen 2 -->
+    <div class="scenario-container hidden" id="scenario-2">
+        <div class="page-counter">2/6</div>
+        <div class="content-grid">
+            <div class="scenario-box"><p>This is a text for scenario one.</p></div>
+            <div class="scenario-box"><p>This is a text for scenario two.</p></div>
+        </div>
+    </div>
+
+    <!-- Scenario Screen 3 -->
+    <div class="scenario-container hidden" id="scenario-3">
+        <div class="page-counter">3/6</div>
+        <div class="content-grid">
+            <div class="scenario-box"><p>This is a text for scenario one.</p></div>
+            <div class="scenario-box"><p>This is a text for scenario two.</p></div>
+        </div>
+    </div>
+
+    <!-- Scenario Screen 4 -->
+    <div class="scenario-container hidden" id="scenario-4">
+        <div class="page-counter">4/6</div>
+        <div class="content-grid">
+            <div class="scenario-box"><p>This is a text for scenario one.</p></div>
+            <div class="scenario-box"><p>This is a text for scenario two.</p></div>
+        </div>
+    </div>
+
+    <!-- Scenario Screen 5 -->
+    <div class="scenario-container hidden" id="scenario-5">
+        <div class="page-counter">5/6</div>
+        <div class="content-grid">
+            <div class="scenario-box"><p>This is a text for scenario one.</p></div>
+            <div class="scenario-box"><p>This is a text for scenario two.</p></div>
+        </div>
+    </div>
+
+    <!-- Scenario Screen 6 -->
+    <div class="scenario-container hidden" id="scenario-6">
+        <div class="page-counter">6/6</div>
+        <div class="content-grid">
+            <div class="scenario-box"><p>This is a text for scenario one.</p></div>
+            <div class="scenario-box"><p>This is a text for scenario two.</p></div>
+        </div>
+    </div>
+
+    <!-- Finish Screen -->
+    <div class="finish-content hidden" id="finish-screen">
+        <div class="finish-message">
+            <h2 class="finish-title" data-de="Deine Praktiken für die Zukunft" data-en="Your Practices for the Future">Deine Praktiken für die Zukunft</h2>
+            <div class="practices-container" id="practices-container">
+                <!-- Practices will be inserted here -->
+            </div>
+            <div class="keywords-section">
+                <h3 class="keywords-title" data-de="Deine Themen" data-en="Your Topics">Deine Themen</h3>
+                <ul class="keywords-list" id="keywords-list">
+                    <!-- Keywords will be inserted here -->
+                </ul>
+            </div>
+            <div class="button-group">
+                <button class="restart-button" onclick="restartExperience()" data-de="Nochmal" data-en="Start Over">Nochmal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScreen = 0;
+        const screens = ['start-screen', 'scenario-1', 'scenario-2', 'scenario-3', 'scenario-4', 'scenario-5', 'scenario-6', 'finish-screen'];
+        let allScenarios = []; // All scenarios from CSV
+        let roundScenarios = []; // Selected scenarios for this round (12 total, 2 per screen)
+        let currentLanguage = 'de'; // Default language is German
+        
+        // Track selected practices and keywords
+        let selectedPractices = [];
+        let selectedKeywords = [];
+
+        // Language toggle functionality
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = this.dataset.lang;
+                setLanguage(lang);
+            });
+        });
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            
+            // Update all translatable text
+            document.querySelectorAll('[data-de]').forEach(el => {
+                const text = el.dataset[lang];
+                if (text) {
+                    el.textContent = text;
+                }
+            });
+            
+            // Re-populate scenarios with new language if already loaded
+            if (roundScenarios.length > 0) {
+                populateScenarios();
+            }
+        }
+
+        // Load and parse CSV file
+        async function loadCSV() {
+            try {
+                console.log('Attempting to load CSV...');
+                const response = await fetch('assets/csv/scenarios.csv');
+                console.log('Response status:', response.status);
+                const csvText = await response.text();
+                console.log('CSV loaded, length:', csvText.length);
+                parseCSV(csvText);
+                console.log('All scenarios:', allScenarios);
+                generateRoundScenarios();
+                console.log('Round scenarios:', roundScenarios);
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                alert('Error loading CSV: ' + error.message + '\n\nPlease run this app using a local web server.');
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            // Skip header row
+            // CSV columns: Kartennummer, Szenario (deutsch), Szenarien (englisch), Schlagwörter, Ableitung / Practice, [optional: Typ, Sub]
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue; // Skip empty lines
+                
+                // Parse CSV with quoted fields
+                const columns = parseCSVLine(line);
+                
+                const cardNumber = columns[0]?.trim();
+                const scenarioDE = columns[1]?.trim();
+                const scenarioEN = columns[2]?.trim();
+                const keywords = columns[3]?.trim(); // Schlagwörter
+                const practice = columns[4]?.trim(); // Ableitung / Practice
+                const haupttyp = columns[5]?.trim() || 'default'; // Typ (optional, defaults to 'default')
+                const subtypenRaw = columns[6]?.trim(); // Sub (optional)
+                
+                if (!cardNumber || !scenarioDE) continue;
+                
+                // Parse subtypes (comma-separated, may have spaces)
+                const subtypes = subtypenRaw ? 
+                    subtypenRaw.split(',').map(s => s.trim()).filter(s => s) : 
+                    [];
+                
+                // Parse keywords (comma-separated)
+                const keywordList = keywords ? 
+                    keywords.split(',').map(s => s.trim()).filter(s => s) : 
+                    [];
+                
+                allScenarios.push({
+                    id: cardNumber,
+                    textDE: scenarioDE,
+                    textEN: scenarioEN || scenarioDE, // Fallback to German if no English
+                    keywords: keywordList,
+                    practice: practice || '', // May be empty
+                    haupttyp: haupttyp,
+                    subtypes: subtypes
+                });
+                
+                console.log('Added scenario:', cardNumber, haupttyp, 'keywords:', keywordList);
+            }
+        }
+        
+        // Helper function to parse CSV line with quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current); // Add last field
+            
+            return result;
+        }
+
+        // Fisher-Yates shuffle for true randomization
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function generateRoundScenarios() {
+            // Group scenarios by Haupttyp
+            const scenariosByHaupttyp = {};
+            allScenarios.forEach(scenario => {
+                if (!scenariosByHaupttyp[scenario.haupttyp]) {
+                    scenariosByHaupttyp[scenario.haupttyp] = [];
+                }
+                scenariosByHaupttyp[scenario.haupttyp].push(scenario);
+            });
+            
+            console.log('Scenarios by Haupttyp:', scenariosByHaupttyp);
+            
+            // Get all haupttyp names
+            const haupttyps = Object.keys(scenariosByHaupttyp);
+            console.log('Haupttyps found:', haupttyps);
+            
+            let selectedScenarios = [];
+            
+            // Check if we have multiple types or just one (default)
+            if (haupttyps.length >= 6) {
+                // Original logic: Select 2 scenarios from each Haupttyp (12 total scenarios)
+                haupttyps.forEach(haupttyp => {
+                    const scenarios = scenariosByHaupttyp[haupttyp];
+                    const shuffled = shuffleArray(scenarios);
+                    // Take 2 scenarios from each Haupttyp
+                    selectedScenarios.push(...shuffled.slice(0, 2));
+                });
+            } else {
+                // New logic: No types defined, just randomly select 12 scenarios
+                console.log('Using simple random selection (no type grouping)');
+                const shuffled = shuffleArray(allScenarios);
+                selectedScenarios = shuffled.slice(0, 12);
+            }
+            
+            console.log('Selected scenarios:', selectedScenarios.length, selectedScenarios);
+            
+            // Shuffle all selected scenarios for random order
+            const shuffledScenarios = shuffleArray(selectedScenarios);
+            
+            // Create 6 rounds with 2 scenarios each
+            roundScenarios = [];
+            for (let round = 0; round < 6; round++) {
+                const scenario1 = shuffledScenarios[round * 2];
+                const scenario2 = shuffledScenarios[round * 2 + 1];
+                if (scenario1 && scenario2) {
+                    roundScenarios.push([scenario1, scenario2]);
+                }
+            }
+            
+            console.log('Round scenarios created:', roundScenarios);
+            
+            // Reset selected practices and keywords
+            selectedPractices = [];
+            selectedKeywords = [];
+            
+            // Populate the scenario boxes
+            populateScenarios();
+        }
+
+        function populateScenarios() {
+            for (let i = 0; i < 6; i++) {
+                const screenId = `scenario-${i + 1}`;
+                const boxes = document.querySelectorAll(`#${screenId} .scenario-box`);
+                
+                if (boxes.length >= 2 && roundScenarios[i]) {
+                    // Use current language for text
+                    const text1 = currentLanguage === 'de' ? roundScenarios[i][0].textDE : roundScenarios[i][0].textEN;
+                    const text2 = currentLanguage === 'de' ? roundScenarios[i][1].textDE : roundScenarios[i][1].textEN;
+                    
+                    boxes[0].querySelector('p').textContent = text1;
+                    boxes[1].querySelector('p').textContent = text2;
+                    
+                    // Remove any existing click handlers to prevent duplicates
+                    const newBox0 = boxes[0].cloneNode(true);
+                    const newBox1 = boxes[1].cloneNode(true);
+                    boxes[0].parentNode.replaceChild(newBox0, boxes[0]);
+                    boxes[1].parentNode.replaceChild(newBox1, boxes[1]);
+                    
+                    // Add click handlers with choice tracking
+                    newBox0.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log('Box 0 clicked on screen', i + 1);
+                        playTapImpact();
+                        handleChoice(i, 0);
+                    });
+                    newBox1.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log('Box 1 clicked on screen', i + 1);
+                        playTapImpact();
+                        handleChoice(i, 1);
+                    });
+                }
+            }
+        }
+
+        let isProcessingChoice = false; // Prevent double-clicks
+        
+        function handleChoice(roundIndex, choiceIndex) {
+            // Prevent double-click processing
+            if (isProcessingChoice) {
+                console.log('Already processing a choice, ignoring...');
+                return;
+            }
+            
+            isProcessingChoice = true;
+            console.log('=== Processing choice for round', roundIndex + 1, 'choice', choiceIndex, '===');
+            
+            const selectedScenario = roundScenarios[roundIndex][choiceIndex];
+            console.log('Selected scenario:', selectedScenario);
+            
+            // Collect practice if it exists
+            if (selectedScenario.practice && selectedScenario.practice.trim()) {
+                selectedPractices.push(selectedScenario.practice);
+                console.log('Added practice:', selectedScenario.practice);
+            }
+            
+            // Collect keywords
+            if (selectedScenario.keywords && selectedScenario.keywords.length > 0) {
+                selectedScenario.keywords.forEach(keyword => {
+                    if (!selectedKeywords.includes(keyword)) {
+                        selectedKeywords.push(keyword);
+                    }
+                });
+                console.log('Added keywords:', selectedScenario.keywords);
+            }
+            
+            console.log('Total practices collected:', selectedPractices.length);
+            console.log('Total keywords collected:', selectedKeywords.length);
+            
+            // Visual feedback: hide other card, blink selected card
+            const screenId = `scenario-${roundIndex + 1}`;
+            const boxes = document.querySelectorAll(`#${screenId} .scenario-box`);
+            const selectedBox = boxes[choiceIndex];
+            const otherBox = boxes[choiceIndex === 0 ? 1 : 0];
+            
+            // Hide the other card instantly (no transition)
+            otherBox.style.transition = 'none';
+            otherBox.style.opacity = '0';
+            
+            // Blink the selected card
+            let blinkCount = 0;
+            const blinkInterval = setInterval(() => {
+                if (blinkCount < 6) { // 3 full blinks (on/off/on/off/on/off)
+                    selectedBox.style.opacity = blinkCount % 2 === 0 ? '0.3' : '1';
+                    blinkCount++;
+                } else {
+                    clearInterval(blinkInterval);
+                    // Disappear after last blink
+                    selectedBox.style.opacity = '0';
+                    
+                    // Move to next screen after 1.5 seconds total feedback
+                    setTimeout(() => {
+                        // Reset styles for next round
+                        otherBox.style.transition = '';
+                        otherBox.style.opacity = '1';
+                        selectedBox.style.opacity = '1';
+                        
+                        nextScreen();
+                        isProcessingChoice = false;
+                    }, 600); // 900ms blinking + 600ms = 1500ms total
+                }
+            }, 150); // 150ms per blink state
+        }
+
+
+        // Start button click - move to first scenario
+        document.querySelector('.start-button').addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Start button clicked');
+            ensureAudioPlaying(); // Ensure audio is playing (fallback if autoplay was blocked)
+            
+            // Play start sound
+            startAudio.volume = 0.8;
+            startAudio.play().catch(err => console.log('Start sound play failed'));
+            
+            nextScreen();
+        });
+
+        function nextScreen() {
+            console.log('=== nextScreen called, currentScreen:', currentScreen, 'screenName:', screens[currentScreen], '===');
+            
+            // Hide current screen
+            const currentScreenElement = document.getElementById(screens[currentScreen]);
+            if (currentScreenElement) {
+                currentScreenElement.classList.add('hidden');
+                console.log('Hidden screen:', screens[currentScreen]);
+            }
+            
+            // Move to next screen
+            currentScreen++;
+            console.log('Moving to screen index:', currentScreen);
+            
+            // Update animation intensity based on current screen
+            updateAnimationIntensity(currentScreen);
+            
+            // Show next screen if it exists
+            if (currentScreen < screens.length) {
+                const nextScreenElement = document.getElementById(screens[currentScreen]);
+                if (nextScreenElement) {
+                    nextScreenElement.classList.remove('hidden');
+                    console.log('Showing screen:', screens[currentScreen]);
+                } else {
+                    console.error('Screen element not found:', screens[currentScreen]);
+                }
+                
+                // If showing finish screen, populate results and switch audio
+                if (screens[currentScreen] === 'finish-screen') {
+                    console.log('Reached finish screen, populating results...');
+                    populateFinishScreen();
+                    switchToLoop02();
+                }
+            } else {
+                // Reached the end - stay on finish screen
+                currentScreen = screens.length - 1; // Stay on finish screen
+                const finishScreenElement = document.getElementById(screens[currentScreen]);
+                if (finishScreenElement) {
+                    finishScreenElement.classList.remove('hidden');
+                    console.log('At end, showing finish screen');
+                }
+            }
+        }
+        
+        function populateFinishScreen() {
+            // Populate practices
+            const practicesContainer = document.getElementById('practices-container');
+            practicesContainer.innerHTML = '';
+            
+            if (selectedPractices.length > 0) {
+                selectedPractices.forEach(practice => {
+                    const p = document.createElement('p');
+                    p.className = 'practice-item';
+                    p.textContent = practice;
+                    practicesContainer.appendChild(p);
+                });
+            } else {
+                const p = document.createElement('p');
+                p.className = 'practice-item';
+                p.textContent = currentLanguage === 'de' 
+                    ? 'Keine spezifischen Praktiken für deine Auswahl verfügbar.' 
+                    : 'No specific practices available for your selection.';
+                practicesContainer.appendChild(p);
+            }
+            
+            // Populate keywords
+            const keywordsList = document.getElementById('keywords-list');
+            keywordsList.innerHTML = '';
+            
+            if (selectedKeywords.length > 0) {
+                selectedKeywords.forEach(keyword => {
+                    const li = document.createElement('li');
+                    li.textContent = keyword;
+                    keywordsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = currentLanguage === 'de' 
+                    ? 'Keine Themen gesammelt' 
+                    : 'No topics collected';
+                keywordsList.appendChild(li);
+            }
+        }
+        
+        function restartExperience() {
+            // Hide finish screen
+            document.getElementById(screens[currentScreen]).classList.add('hidden');
+            
+            // Reset to start
+            currentScreen = 0;
+            document.getElementById(screens[currentScreen]).classList.remove('hidden');
+            
+            // Reset animation intensity
+            updateAnimationIntensity(0);
+            
+            // Switch back to loop_01
+            loopAudio02.pause();
+            loopAudio02.currentTime = 0;
+            loopAudio01.volume = 0.7;
+            loopAudio01.play();
+            
+            // Regenerate scenarios (this will also reset practices and keywords)
+            roundScenarios = [];
+            generateRoundScenarios();
+        }
+
+        // ========== AUDIO SYSTEM ==========
+        
+        const loopAudio01 = document.getElementById('loop-audio-01');
+        const loopAudio02 = document.getElementById('loop-audio-02');
+        const startAudio = new Audio('assets/audio/start_01.aif');
+        startAudio.preload = 'auto';
+        let tapImpactAudios = [];
+        let glitchAudios = [];
+        let audioInitialized = false;
+        let lastImpactIndex = -1;
+        
+        // Load tap impact sounds dynamically
+        async function loadTapImpacts() {
+            const basePath = 'assets/audio/tap_impacts/';
+            const impactFiles = [];
+            
+            // Try to find impact files with pattern impact_01, impact_02, etc.
+            let index = 1;
+            let consecutiveFailures = 0;
+            
+            while (consecutiveFailures < 3 && index < 20) {
+                const paddedIndex = String(index).padStart(2, '0');
+                const filename = `impact_${paddedIndex}.aif`;
+                
+                try {
+                    const response = await fetch(basePath + filename, { method: 'HEAD' });
+                    if (response.ok) {
+                        impactFiles.push(filename);
+                        consecutiveFailures = 0;
+                    } else {
+                        consecutiveFailures++;
+                    }
+                } catch {
+                    consecutiveFailures++;
+                }
+                index++;
+            }
+            
+            impactFiles.forEach(file => {
+                const audio = new Audio(basePath + file);
+                audio.preload = 'auto';
+                audio.volume = 0.8;
+                tapImpactAudios.push(audio);
+            });
+            
+            console.log('Loaded tap impact sounds:', impactFiles);
+        }
+        
+        // Load glitch sounds dynamically
+        async function loadGlitchSounds() {
+            const basePath = 'assets/audio/glitches/';
+            const glitchFiles = [];
+            
+            // Try to find glitch files with pattern glitch_01, glitch_02, etc.
+            let index = 1;
+            let consecutiveFailures = 0;
+            
+            while (consecutiveFailures < 3 && index < 20) {
+                const paddedIndex = String(index).padStart(2, '0');
+                const filename = `glitch_${paddedIndex}.aif`;
+                
+                try {
+                    const response = await fetch(basePath + filename, { method: 'HEAD' });
+                    if (response.ok) {
+                        glitchFiles.push(filename);
+                        consecutiveFailures = 0;
+                    } else {
+                        consecutiveFailures++;
+                    }
+                } catch {
+                    consecutiveFailures++;
+                }
+                index++;
+            }
+            
+            // Create multiple instances of each glitch sound for overlapping playback
+            glitchFiles.forEach(file => {
+                for (let i = 0; i < 3; i++) {
+                    const audio = new Audio(basePath + file);
+                    audio.preload = 'auto';
+                    audio.volume = 1.0;
+                    glitchAudios.push(audio);
+                }
+            });
+            
+            console.log('Loaded glitch sounds:', glitchFiles);
+        }
+        
+        // Initialize audio - try to start immediately
+        function initializeAudio() {
+            if (audioInitialized) return;
+            
+            loopAudio01.volume = 0.7;
+            loopAudio01.play().then(() => {
+                console.log('Loop audio started successfully');
+                audioInitialized = true;
+            }).catch(err => {
+                console.log('Audio autoplay prevented, waiting for user interaction');
+            });
+        }
+        
+        // Ensure audio is playing on user interaction
+        function ensureAudioPlaying() {
+            if (!audioInitialized) {
+                loopAudio01.volume = 0.7;
+                loopAudio01.play().then(() => {
+                    audioInitialized = true;
+                }).catch(err => console.log('Audio play failed'));
+            }
+        }
+        
+        // Switch from loop_01 to loop_02
+        function switchToLoop02() {
+            // Fade out loop 01
+            const fadeOutInterval = setInterval(() => {
+                if (loopAudio01.volume > 0.1) {
+                    loopAudio01.volume = Math.max(0, loopAudio01.volume - 0.1);
+                } else {
+                    clearInterval(fadeOutInterval);
+                    loopAudio01.pause();
+                    loopAudio01.volume = 0.7; // Reset for potential restart
+                }
+            }, 100);
+            
+            // Start loop 02
+            setTimeout(() => {
+                loopAudio02.volume = 0.7;
+                loopAudio02.play().catch(err => {
+                    console.log('Loop 02 play failed:', err);
+                });
+            }, 500);
+        }
+        
+        // Play random tap impact sound (never the same one twice in a row)
+        function playTapImpact() {
+            if (tapImpactAudios.length === 0) return;
+            
+            let randomIndex;
+            
+            // If only one sound, just play it
+            if (tapImpactAudios.length === 1) {
+                randomIndex = 0;
+            } else {
+                // Pick a random index that's different from the last one
+                do {
+                    randomIndex = Math.floor(Math.random() * tapImpactAudios.length);
+                } while (randomIndex === lastImpactIndex);
+            }
+            
+            lastImpactIndex = randomIndex;
+            
+            const randomImpact = tapImpactAudios[randomIndex];
+            randomImpact.currentTime = 0;
+            randomImpact.volume = 0.8;
+            randomImpact.play().catch(err => console.log('Tap impact sound play failed'));
+        }
+        
+        // Play glitch sound (synchronized with visual glitch)
+        function playGlitchSound() {
+            if (glitchAudios.length === 0) return;
+            
+            // Find an available glitch audio instance (not currently playing)
+            let availableGlitch = glitchAudios.find(audio => audio.paused || audio.ended);
+            
+            // If all are playing, pick a random one
+            if (!availableGlitch) {
+                availableGlitch = glitchAudios[Math.floor(Math.random() * glitchAudios.length)];
+            }
+            
+            availableGlitch.currentTime = 0;
+            availableGlitch.volume = 1.0; // Constant volume - loud
+            availableGlitch.play().catch(err => console.log('Glitch sound play failed'));
+        }
+        
+        // ========== ANIMATED GLITCH BACKGROUND ==========
+        
+        const glitchContainer = document.getElementById('glitch-container');
+        let glitchLayers = [];
+        let animationImages = [];
+        let glitchIntensity = 1;
+        let glitchInterval = 2500; // milliseconds between glitches (slower)
+        
+        // Blend modes for random selection
+        const blendModes = [
+            'multiply',
+            'screen',
+            'overlay',
+            'hard-light',
+            'soft-light',
+            'difference',
+            'exclusion',
+            'color-dodge',
+            'color-burn',
+            'lighten',
+            'darken'
+        ];
+        
+        // Dynamically load all images from bg_animation folder
+        async function loadAnimationImages() {
+            const basePath = 'assets/images/bg_animation/';
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const loadedImages = [];
+            
+            // Try to load images with naming pattern: bg_layer_01, bg_layer_02, etc.
+            let index = 1;
+            let consecutiveFailures = 0;
+            const maxConsecutiveFailures = 3; // Stop after 3 consecutive missing files
+            
+            while (consecutiveFailures < maxConsecutiveFailures && index < 100) {
+                const paddedIndex = String(index).padStart(2, '0');
+                let foundImage = false;
+                
+                // Try each extension
+                for (const ext of imageExtensions) {
+                    const filename = `bg_layer_${paddedIndex}.${ext}`;
+                    const loaded = await checkImageExists(basePath + filename);
+                    
+                    if (loaded) {
+                        loadedImages.push(filename);
+                        foundImage = true;
+                        consecutiveFailures = 0; // Reset counter
+                        console.log('Found image:', filename);
+                        break; // Found this index, move to next
+                    }
+                }
+                
+                if (!foundImage) {
+                    consecutiveFailures++;
+                }
+                
+                index++;
+            }
+            
+            animationImages = loadedImages;
+            console.log('Total loaded animation images:', animationImages.length, animationImages);
+            
+            if (animationImages.length === 0) {
+                console.warn('No animation images found in', basePath);
+            }
+            
+            // Create glitch layers
+            createGlitchLayers();
+        }
+        
+        // Helper function to check if image exists
+        function checkImageExists(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+        
+        // Create multiple glitch layer elements
+        function createGlitchLayers() {
+            // Create 12 layer elements for more fragments
+            for (let i = 0; i < 12; i++) {
+                const layer = document.createElement('div');
+                layer.className = 'glitch-layer';
+                glitchContainer.appendChild(layer);
+                glitchLayers.push({
+                    element: layer,
+                    active: false
+                });
+            }
+            
+            // Start glitch animation
+            startGlitchAnimation();
+        }
+        
+        // Glitch animation function
+        let glitchTimeout = null;
+        let glitchRunning = false;
+        let activeGlitchTimeouts = []; // Track all active layer timeouts
+        
+        function startGlitchAnimation() {
+            glitchRunning = true;
+            
+            function glitch() {
+                if (!glitchRunning) return; // Stop if disabled
+                if (animationImages.length === 0) return;
+                
+                let glitchOccurred = false;
+                
+                glitchLayers.forEach(layer => {
+                    // Random chance to activate based on intensity (lower = fewer simultaneous glitches)
+                    if (Math.random() < 0.25 * glitchIntensity) {
+                        glitchOccurred = true;
+                        // Pick random image
+                        const randomImage = animationImages[Math.floor(Math.random() * animationImages.length)];
+                        
+                        // Pick random blend mode
+                        const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
+                        
+                        // Random opacity
+                        const randomOpacity = (Math.random() * 0.5 + 0.3) * glitchIntensity;
+                        
+                        // Vertical strips only - random width, full height
+                        const stripWidth = Math.random() * 15 + 3; // 3-18% of screen width
+                        
+                        // Random horizontal position on screen
+                        const posX = Math.random() * (100 - stripWidth); // Ensure strip stays on screen
+                        
+                        // Random position within the source image to crop from (horizontal only)
+                        const bgPosX = Math.random() * 100;
+                        
+                        // Apply styles - create vertical strip
+                        layer.element.style.backgroundImage = `url('assets/images/bg_animation/${randomImage}')`;
+                        layer.element.style.mixBlendMode = randomBlendMode;
+                        layer.element.style.opacity = randomOpacity;
+                        
+                        // Position and size the vertical strip
+                        layer.element.style.left = `${posX}%`;
+                        layer.element.style.top = '0';
+                        layer.element.style.width = `${stripWidth}%`;
+                        layer.element.style.height = '100%';
+                        
+                        // Position within the background image
+                        layer.element.style.backgroundPosition = `${bgPosX}% center`;
+                        layer.element.style.backgroundSize = 'cover';
+                        
+                        // Keep fragments straight (no rotation or skew)
+                        layer.element.style.transform = 'none';
+                        
+                        layer.active = true;
+                        
+                        // Hide after short duration - TRACK the timeout
+                        const duration = Math.random() * 400 + 200;
+                        const hideTimeout = setTimeout(() => {
+                            if (glitchRunning) { // Only hide if animation is still running
+                                layer.element.style.opacity = 0;
+                                layer.active = false;
+                            }
+                        }, duration);
+                        
+                        // Store timeout ID for cleanup
+                        activeGlitchTimeouts.push(hideTimeout);
+                    }
+                });
+                
+                // Play glitch sound if any glitch occurred
+                if (glitchOccurred) {
+                    playGlitchSound();
+                }
+                
+                // Schedule next glitch
+                const nextGlitch = Math.random() * glitchInterval + (glitchInterval / 2);
+                glitchTimeout = setTimeout(glitch, nextGlitch);
+            }
+            
+            // Start the glitch cycle
+            glitch();
+        }
+        
+        function stopGlitchAnimation() {
+            glitchRunning = false;
+            
+            // Clear main glitch timeout
+            if (glitchTimeout) {
+                clearTimeout(glitchTimeout);
+                glitchTimeout = null;
+            }
+            
+            // Clear ALL pending layer hide timeouts
+            activeGlitchTimeouts.forEach(timeout => clearTimeout(timeout));
+            activeGlitchTimeouts = [];
+            
+            // Immediately hide all active glitch layers (disable transition for instant effect)
+            glitchLayers.forEach(layer => {
+                layer.element.style.transition = 'none'; // Disable CSS transition
+                layer.element.style.opacity = 0;
+                layer.element.style.backgroundImage = '';
+                layer.active = false;
+                
+                // Force reflow to ensure transition is disabled
+                void layer.element.offsetHeight;
+                
+                // Re-enable transition for future use
+                setTimeout(() => {
+                    if (layer.element) {
+                        layer.element.style.transition = 'opacity 0.1s ease';
+                    }
+                }, 50);
+            });
+        }
+        
+        // Update animation intensity based on round
+        function updateAnimationIntensity(round) {
+            // round is 0-6 (start screen = 0, scenarios 1-6, finish = 7)
+            const intensity = Math.min(round, 6);
+            glitchIntensity = 1 + (intensity * 0.2); // Intensity increases (slower)
+            
+            // Increase glitch frequency (lower interval = more glitches) - but slower overall
+            glitchInterval = Math.max(800, 2500 - (intensity * 250));
+            
+            console.log('Glitch intensity:', glitchIntensity, 'Interval:', glitchInterval);
+        }
+        
+        // Initialize: Load CSV when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            loadCSV();
+            
+            // Load audio files asynchronously
+            await Promise.all([
+                loadTapImpacts(),
+                loadGlitchSounds()
+            ]);
+            
+            console.log('Audio files loaded and ready');
+            
+            // Try to start audio immediately (may be blocked by browser)
+            initializeAudio();
+            
+            // Initialize glitch animation
+            loadAnimationImages();
+        });
+    </script>
+</body>
+</html>
