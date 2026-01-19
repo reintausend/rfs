@@ -6,6 +6,7 @@
     <title>Horoscope</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
 <body>
     <!-- Audio Elements -->
@@ -109,8 +110,8 @@
                     </div>
                 </div>
                 <div class="finish-right">
-                    <div class="qr-placeholder">
-                        <span>QR</span>
+                    <div class="qr-code" id="qr-code">
+                        <!-- QR code will be generated here -->
                     </div>
                     <p class="qr-instruction" data-de="Scanne den QR-Code, um dir deine Praktiken auf deinem Handy anzeigen zu lassen." data-en="Scan the QR code to view your practices on your phone.">Scanne den QR-Code, um dir deine Praktiken auf deinem Handy anzeigen zu lassen.</p>
                 </div>
@@ -128,6 +129,7 @@
         
         // Track selected practices and keywords
         let selectedPractices = [];
+        let selectedPracticesData = []; // Stores {practiceDE, practiceEN} objects
         let selectedKeywords = [];
 
         // Language toggle functionality
@@ -193,9 +195,10 @@
                 const scenarioDE = columns[1]?.trim();
                 const scenarioEN = columns[2]?.trim();
                 const keywords = columns[3]?.trim(); // Schlagwörter
-                const practice = columns[4]?.trim(); // Ableitung / Practice
-                const haupttyp = columns[5]?.trim() || 'default'; // Typ (optional, defaults to 'default')
-                const subtypenRaw = columns[6]?.trim(); // Sub (optional)
+                const practiceDE = columns[4]?.trim(); // Ableitung / Practice (de)
+                const practiceEN = columns[5]?.trim(); // Ableitung / Practice (en)
+                const haupttyp = columns[6]?.trim() || 'default'; // Typ (optional, defaults to 'default')
+                const subtypenRaw = columns[7]?.trim(); // Sub (optional)
                 
                 if (!cardNumber || !scenarioDE) continue;
                 
@@ -214,7 +217,9 @@
                     textDE: scenarioDE,
                     textEN: scenarioEN || scenarioDE, // Fallback to German if no English
                     keywords: keywordList,
-                    practice: practice || '', // May be empty
+                    practice: practiceDE || '', // May be empty (kept for backwards compat)
+                    practiceDE: practiceDE || '',
+                    practiceEN: practiceEN || practiceDE || '', // Fallback to German
                     haupttyp: haupttyp,
                     subtypes: subtypes
                 });
@@ -309,6 +314,7 @@
             
             // Reset selected practices and keywords
             selectedPractices = [];
+            selectedPracticesData = [];
             selectedKeywords = [];
             
             // Populate the scenario boxes
@@ -394,6 +400,11 @@
             // Collect practice if it exists
             if (selectedScenario.practice && selectedScenario.practice.trim()) {
                 selectedPractices.push(selectedScenario.practice);
+                // Store both languages for QR code
+                selectedPracticesData.push({
+                    practiceDE: selectedScenario.practiceDE,
+                    practiceEN: selectedScenario.practiceEN
+                });
                 console.log('Added practice:', selectedScenario.practice);
             }
             
@@ -548,15 +559,26 @@
             const practicesContainer = document.getElementById('practices-container');
             practicesContainer.innerHTML = '';
             
-            if (selectedPractices.length > 0) {
+            // Store the practices data for QR code (with both languages)
+            let practicesForQR = [];
+            
+            if (selectedPracticesData.length > 0) {
                 // Shuffle and take up to 3 practices
-                const shuffledPractices = shuffleArray([...selectedPractices]);
+                const shuffledPractices = shuffleArray([...selectedPracticesData]);
                 const displayPractices = shuffledPractices.slice(0, 3);
                 
-                // Combine into a single paragraph
+                // Store for QR code
+                practicesForQR = displayPractices.map(p => ({
+                    de: p.practiceDE,
+                    en: p.practiceEN
+                }));
+                
+                // Combine into a single paragraph (use current language)
                 const p = document.createElement('p');
                 p.className = 'practice-paragraph';
-                p.textContent = displayPractices.join(' ');
+                p.textContent = displayPractices.map(practice => 
+                    currentLanguage === 'de' ? practice.practiceDE : practice.practiceEN
+                ).join(' ');
                 practicesContainer.appendChild(p);
             } else {
                 const p = document.createElement('p');
@@ -565,6 +587,67 @@
                     ? 'Keine spezifischen Praktiken für deine Auswahl verfügbar.' 
                     : 'No specific practices available for your selection.';
                 practicesContainer.appendChild(p);
+            }
+            
+            // Generate QR code
+            generateResultsQRCode(practicesForQR);
+        }
+        
+        // Generate QR code with encoded results
+        function generateResultsQRCode(practices) {
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = ''; // Clear any existing QR code
+            
+            // Check if qrcode library is loaded
+            if (typeof qrcode === 'undefined') {
+                console.error('qrcode library not loaded!');
+                qrContainer.innerHTML = '<span style="color:#000;font-size:12px;">QR Error</span>';
+                return;
+            }
+            
+            // Generate timestamp
+            const timestamp = new Date().toISOString();
+            
+            // Encode practices as base64 JSON (include timestamp)
+            const dataToEncode = {
+                practices: practices,
+                timestamp: timestamp
+            };
+            const dataJSON = JSON.stringify(dataToEncode);
+            const encodedData = btoa(unescape(encodeURIComponent(dataJSON))); // Handle unicode
+            
+            // Generate unique session ID
+            const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            
+            // Build the URL for results page (GitHub Pages compatible)
+            const pathArray = window.location.pathname.split('/');
+            pathArray.pop(); // Remove current file (index.html or empty)
+            const basePath = pathArray.join('/');
+            const resultsUrl = `${window.location.origin}${basePath}/results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
+            
+            console.log('QR Code URL:', resultsUrl);
+            console.log('URL length:', resultsUrl.length);
+            
+            try {
+                // Create QR code using qrcode-generator library
+                const typeNumber = 0; // Auto-detect
+                const errorCorrectionLevel = 'L'; // Low correction for more data
+                const qr = qrcode(typeNumber, errorCorrectionLevel);
+                qr.addData(resultsUrl);
+                qr.make();
+                
+                // Create image element
+                const img = document.createElement('img');
+                img.src = qr.createDataURL(4); // 4 = cell size in pixels
+                img.alt = 'QR Code';
+                img.style.width = '180px';
+                img.style.height = '180px';
+                qrContainer.appendChild(img);
+                
+                console.log('QR code generated successfully');
+            } catch (error) {
+                console.error('QR code generation failed:', error);
+                qrContainer.innerHTML = '<span style="color:#000;font-size:12px;">QR Error</span>';
             }
         }
         
@@ -587,6 +670,12 @@
             loopAudio02.currentTime = 0;
             loopAudio01.volume = 0.7;
             loopAudio01.play();
+            
+            // Clear QR code
+            const qrContainer = document.getElementById('qr-code');
+            if (qrContainer) {
+                qrContainer.innerHTML = '';
+            }
             
             // Regenerate scenarios (this will also reset practices and keywords)
             roundScenarios = [];

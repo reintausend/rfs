@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deine Praktiken | Your Practices</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Mobile-optimized results page */
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+
+        #bg-image-layer {
+            opacity: 0.3;
+            filter: blur(20px);
+        }
+
+        .results-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .results-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(255, 255, 255, 0.05);
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .results-header::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+        }
+
+        .results-title {
+            font-size: clamp(22px, 5vw, 28px);
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .results-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .practice-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(255, 255, 255, 0.4);
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .practice-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #fff;
+        }
+
+        .practice-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .practice-number {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .no-results {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 40px;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .language-switch {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .lang-btn {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a2e;
+            border-color: transparent;
+        }
+
+        .timestamp {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .practice-item {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .practice-item:nth-child(1) { animation-delay: 0.1s; }
+        .practice-item:nth-child(2) { animation-delay: 0.2s; }
+        .practice-item:nth-child(3) { animation-delay: 0.3s; }
+        .practice-item:nth-child(4) { animation-delay: 0.4s; }
+        .practice-item:nth-child(5) { animation-delay: 0.5s; }
+        .practice-item:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Background Layer -->
+    <div id="bg-image-layer"></div>
+
+    <div class="results-container">
+        <div class="results-card">
+            <div class="results-header">
+                <h1 class="results-title" id="title-text">Deine Praktiken für die Zukunft</h1>
+                <p class="results-subtitle" id="subtitle-text">Persönliche Auswahl</p>
+            </div>
+
+            <div id="practices-list">
+                <!-- Practices will be inserted here -->
+            </div>
+
+            <div class="language-switch">
+                <button class="lang-btn active" data-lang="de" onclick="switchLanguage('de')">DE</button>
+                <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
+            </div>
+
+            <p class="timestamp" id="timestamp-text"></p>
+            <p class="footer-note" id="footer-text">Gespeichert für dich</p>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                data: params.get('d'), // New format with timestamp
+                practices: params.get('p'), // Legacy format
+                lang: params.get('lang') || 'de',
+                id: params.get('id')
+            };
+        }
+
+        // Decode data from URL (supports both old and new format)
+        function decodeData(params) {
+            // Try new format first (with timestamp)
+            if (params.data) {
+                try {
+                    const decoded = decodeURIComponent(escape(atob(params.data)));
+                    const data = JSON.parse(decoded);
+                    return {
+                        practices: data.practices || [],
+                        timestamp: data.timestamp || null
+                    };
+                } catch (e) {
+                    console.error('Error decoding data:', e);
+                }
+            }
+            
+            // Fallback to legacy format
+            if (params.practices) {
+                try {
+                    const decoded = atob(params.practices);
+                    return {
+                        practices: JSON.parse(decoded),
+                        timestamp: null
+                    };
+                } catch (e) {
+                    console.error('Error decoding practices:', e);
+                }
+            }
+            
+            return { practices: [], timestamp: null };
+        }
+        
+        // Format timestamp for display
+        function formatTimestamp(isoString, lang) {
+            if (!isoString) return '';
+            try {
+                const date = new Date(isoString);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US', options);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // Display practices
+        function displayPractices(practices, lang) {
+            const container = document.getElementById('practices-list');
+            container.innerHTML = '';
+
+            if (!practices || practices.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">✨</div>
+                        <p>${lang === 'de' ? 'Keine Praktiken gefunden.' : 'No practices found.'}</p>
+                        <p style="margin-top: 10px; font-size: 13px;">
+                            ${lang === 'de' 
+                                ? 'Starte eine neue Umfrage, um deine persönlichen Praktiken zu erhalten.' 
+                                : 'Start a new survey to get your personal practices.'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const labelPrefix = lang === 'de' ? 'Praktik' : 'Practice';
+
+            practices.forEach((practice, index) => {
+                const text = lang === 'de' ? (practice.de || practice.text) : (practice.en || practice.text);
+                
+                const item = document.createElement('div');
+                item.className = 'practice-item';
+                item.innerHTML = `
+                    <span class="practice-number">${labelPrefix} ${index + 1}</span>
+                    <p class="practice-text">${text}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Update UI text based on language
+        function updateUILanguage(lang) {
+            document.getElementById('title-text').textContent = 
+                lang === 'de' ? 'Deine Praktiken für die Zukunft' : 'Your Practices for the Future';
+            document.getElementById('subtitle-text').textContent = 
+                lang === 'de' ? 'Persönliche Auswahl' : 'Personal Selection';
+            document.getElementById('footer-text').textContent = 
+                lang === 'de' ? 'Gespeichert für dich' : 'Saved for you';
+            
+            // Update language button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+
+        // Switch language
+        let currentPractices = [];
+        let currentTimestamp = null;
+        
+        function switchLanguage(lang) {
+            updateUILanguage(lang);
+            displayPractices(currentPractices, lang);
+            updateTimestamp(lang);
+            
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('lang', lang);
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Update timestamp display
+        function updateTimestamp(lang) {
+            const timestampEl = document.getElementById('timestamp-text');
+            if (currentTimestamp) {
+                const formatted = formatTimestamp(currentTimestamp, lang);
+                timestampEl.textContent = formatted;
+                timestampEl.style.display = 'block';
+            } else {
+                timestampEl.style.display = 'none';
+            }
+        }
+
+        // Initialize page
+        function init() {
+            const params = getUrlParams();
+            const data = decodeData(params);
+            currentPractices = data.practices;
+            currentTimestamp = data.timestamp;
+            
+            updateUILanguage(params.lang);
+            displayPractices(currentPractices, params.lang);
+            updateTimestamp(params.lang);
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
