@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500;700&display=swap');
 
 * {
     margin: 0;
@@ -8,7 +8,8 @@
 
 body {
     background-color: hsl(0, 0%, 100%);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Geist Mono', monospace;
+    font-weight: 500;
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
@@ -72,6 +73,55 @@ body {
     z-index: 10;
 }
 
+/* Buttons */
+.btn {
+    font-family: 'Geist Mono', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #000;
+    padding: 18px 50px;
+    font-size: 24px;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.btn:active {
+    background-color: #ddd;
+    transform: scale(0.98);
+}
+
+.btn--outline {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    padding: 10px 20px;
+    font-size: 18px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.btn--outline:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn--outline:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: none;
+}
+
+.btn--outline.active {
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #000;
+}
+
+.btn--lg {
+    padding: 18px 60px;
+    font-size: 32px;
+}
+
 /* Language Toggle */
 .language-toggle {
     position: absolute;
@@ -81,30 +131,49 @@ body {
     gap: 10px;
 }
 
-.lang-btn {
-    background-color: transparent;
-    color: #fff;
-    border: 2px solid #fff;
-    padding: 10px 20px;
+/* Progress Bar */
+.progress-bar {
+    position: fixed;
+    top: 30px;
+    left: 40px;
+    right: 40px;
+    height: 44px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+}
+
+.progress-bar__track {
+    flex: 1;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.progress-bar__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    min-width: 80px;
+    background-color: rgba(255, 255, 255, 0.85);
+    transition: width 0.9s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.progress-bar__indicator {
+    padding-right: 20px;
     font-size: 18px;
     font-weight: 700;
-    cursor: pointer;
-    font-family: 'PT Serif', serif;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.lang-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.lang-btn.active {
-    background-color: #fff;
     color: #000;
 }
 
 .start-title {
     font-size: 32px;
-    font-weight: 400;
     color: #000000;
     text-transform: uppercase;
     margin: 0 0 40px 0;
@@ -114,7 +183,7 @@ body {
 
 .intro-textbox {
     background-color: #ffffff90;
-    border-radius: 24px;
+    border-radius: 0px;
     padding: 40px;
     max-width: 800px;
     margin-bottom: 40px;
@@ -124,10 +193,9 @@ body {
 
 .intro-textbox p {
     color: rgb(0, 0, 0);
-    font-size: 28px;
-    font-weight: normal;
+    font-size: 20px;
     line-height: 1.4;
-    text-align: center;
+    text-align: left;
     margin-bottom: 20px;
 }
 
@@ -135,45 +203,18 @@ body {
     margin-bottom: 0;
 }
 
-.start-button {
-    background-color: #fff;
-    color: #000;
-    border: none;
-    padding: 18px 60px;
-    font-size: 32px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    letter-spacing: 2px;
-    font-family: 'PT Serif', serif;
-}
-
-.start-button:active {
-    background-color: #ddd;
-    transform: scale(0.98);
-}
 
 /* Scenario Screens Styles */
 .scenario-container {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 220px 40px 40px 40px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
     z-index: 10;
-}
-
-.page-counter {
-    text-align: center;
-    font-size: 64px;
-    font-weight: bold;
-    color: #ffffff;
-    margin-bottom: 30px;
-    margin-top: 100px;
 }
 
 .content-grid {
@@ -181,13 +222,13 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     width: 100%;
+    align-items: start;
 }
 
 .scenario-box {
     background-color: #ffffff90;
-    border-radius: 24px;
+    border-radius: 00px;
     padding: 40px;
-    min-height: 500px;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
     user-select: none;
@@ -202,8 +243,7 @@ body {
 
 .scenario-box p {
     color: rgb(0, 0, 0);
-    font-size: 28px;
-    font-weight: regular;
+    font-size: 20px;
     line-height: 1.4;
 }
 
@@ -211,8 +251,6 @@ body {
 /* Finish Screen Styles */
 .finish-content {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -220,62 +258,72 @@ body {
     justify-content: center;
     position: relative;
     z-index: 10;
-    padding: 40px 20px;
+    padding: 40px;
 }
 
-.finish-message {
-    text-align: left;
-    background-color: #00000090;
+.finish-box {
     width: 100%;
-    max-width: 900px;
-    padding: 60px 50px;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 60px;
+    margin-bottom: 40px;
+}
+
+.finish-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: start;
+}
+
+.finish-left {
+    text-align: left;
+}
+
+.finish-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 200px;
+}
+
+.qr-placeholder {
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #000;
 }
 
 .finish-title {
     font-size: 36px;
     color: #ffffff;
     margin-bottom: 40px;
-    text-align: center;
-    font-weight: 700;
 }
 
 .practices-container {
     margin-bottom: 50px;
 }
 
-.practice-item {
-    font-size: 24px;
-    color: #ffffff;
-    margin-bottom: 25px;
-    line-height: 1.6;
-    padding-left: 20px;
-    border-left: 3px solid rgba(255, 255, 255, 0.5);
-}
-
-.keywords-section {
-    margin-bottom: 40px;
-    padding-top: 30px;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.keywords-title {
-    font-size: 28px;
-    color: #ffffff;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.keywords-list {
-    list-style: disc;
-    padding-left: 30px;
-    color: #ffffff;
-}
-
-.keywords-list li {
+.practice-paragraph {
     font-size: 20px;
-    margin-bottom: 10px;
-    line-height: 1.4;
+    color: #ffffff;
+    line-height: 1.6;
+    margin-bottom: 30px;
 }
+
+.qr-instruction {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin-top: 15px;
+    width: 200px;
+}
+
 
 .button-group {
     display: flex;
@@ -284,22 +332,4 @@ body {
     margin-top: 30px;
 }
 
-.restart-button {
-    background-color: #ffffff;
-    color: #000;
-    border: none;
-    padding: 18px 50px;
-    font-size: 24px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
-    font-family: 'PT Serif', serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.restart-button:active {
-    background-color: #ddd;
-    transform: scale(0.98);
-}
 

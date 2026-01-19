@@ -22,11 +22,20 @@
     <!-- Animated Glitch Layers Container -->
     <div id="glitch-container"></div>
     
+    <!-- Progress Bar -->
+    <div class="progress-bar hidden" id="progress-bar">
+        <div class="progress-bar__track">
+            <div class="progress-bar__fill" id="progress-fill">
+                <span class="progress-bar__indicator" id="progress-indicator">1/6</span>
+            </div>
+        </div>
+    </div>
+    
     <!-- Start Screen -->
     <div class="start-banner" id="start-screen">
         <div class="language-toggle">
-            <button class="lang-btn active" data-lang="de">DE</button>
-            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="btn btn--outline active" data-lang="de">DE</button>
+            <button class="btn btn--outline" data-lang="en">EN</button>
         </div>
         <div class="intro-textbox">
             <p class="intro-text" data-de="Hi, willkommen." data-en="Hi, welcome.">Hi, willkommen.</p>
@@ -34,12 +43,11 @@
             <p class="intro-text" data-de="du dir deine Zukunft selbst auswählen könntest?" data-en="you could choose your own future?">du dir deine Zukunft selbst auswählen könntest?</p>
             <p class="intro-text" data-de="Probiers aus und tippe auf die Zukunftsszenarien, die für dich wünschenswert sind." data-en="Try it out and tap on the future scenarios that are desirable for you.">Probiers aus und tippe auf die Zukunftsszenarien, die für dich wünschenswert sind.</p>
         </div>
-        <button class="start-button" data-de="START" data-en="START">START</button>
+        <button class="btn btn--lg" data-de="START" data-en="START">START</button>
     </div>
 
     <!-- Scenario Screen 1 -->
     <div class="scenario-container hidden" id="scenario-1">
-        <div class="page-counter">1/6</div>
         <div class="content-grid">
             <div class="scenario-box">
                 <p>This is a text for scenario one.</p>
@@ -52,7 +60,6 @@
 
     <!-- Scenario Screen 2 -->
     <div class="scenario-container hidden" id="scenario-2">
-        <div class="page-counter">2/6</div>
         <div class="content-grid">
             <div class="scenario-box"><p>This is a text for scenario one.</p></div>
             <div class="scenario-box"><p>This is a text for scenario two.</p></div>
@@ -61,7 +68,6 @@
 
     <!-- Scenario Screen 3 -->
     <div class="scenario-container hidden" id="scenario-3">
-        <div class="page-counter">3/6</div>
         <div class="content-grid">
             <div class="scenario-box"><p>This is a text for scenario one.</p></div>
             <div class="scenario-box"><p>This is a text for scenario two.</p></div>
@@ -70,7 +76,6 @@
 
     <!-- Scenario Screen 4 -->
     <div class="scenario-container hidden" id="scenario-4">
-        <div class="page-counter">4/6</div>
         <div class="content-grid">
             <div class="scenario-box"><p>This is a text for scenario one.</p></div>
             <div class="scenario-box"><p>This is a text for scenario two.</p></div>
@@ -79,7 +84,6 @@
 
     <!-- Scenario Screen 5 -->
     <div class="scenario-container hidden" id="scenario-5">
-        <div class="page-counter">5/6</div>
         <div class="content-grid">
             <div class="scenario-box"><p>This is a text for scenario one.</p></div>
             <div class="scenario-box"><p>This is a text for scenario two.</p></div>
@@ -88,7 +92,6 @@
 
     <!-- Scenario Screen 6 -->
     <div class="scenario-container hidden" id="scenario-6">
-        <div class="page-counter">6/6</div>
         <div class="content-grid">
             <div class="scenario-box"><p>This is a text for scenario one.</p></div>
             <div class="scenario-box"><p>This is a text for scenario two.</p></div>
@@ -97,21 +100,23 @@
 
     <!-- Finish Screen -->
     <div class="finish-content hidden" id="finish-screen">
-        <div class="finish-message">
+        <div class="finish-box">
             <h2 class="finish-title" data-de="Deine Praktiken für die Zukunft" data-en="Your Practices for the Future">Deine Praktiken für die Zukunft</h2>
-            <div class="practices-container" id="practices-container">
-                <!-- Practices will be inserted here -->
-            </div>
-            <div class="keywords-section">
-                <h3 class="keywords-title" data-de="Deine Themen" data-en="Your Topics">Deine Themen</h3>
-                <ul class="keywords-list" id="keywords-list">
-                    <!-- Keywords will be inserted here -->
-                </ul>
-            </div>
-            <div class="button-group">
-                <button class="restart-button" onclick="restartExperience()" data-de="Nochmal" data-en="Start Over">Nochmal</button>
+            <div class="finish-grid">
+                <div class="finish-left">
+                    <div class="practices-container" id="practices-container">
+                        <!-- Practices will be inserted here -->
+                    </div>
+                </div>
+                <div class="finish-right">
+                    <div class="qr-placeholder">
+                        <span>QR</span>
+                    </div>
+                    <p class="qr-instruction" data-de="Scanne den QR-Code, um dir deine Praktiken auf deinem Handy anzeigen zu lassen." data-en="Scan the QR code to view your practices on your phone.">Scanne den QR-Code, um dir deine Praktiken auf deinem Handy anzeigen zu lassen.</p>
+                </div>
             </div>
         </div>
+        <button class="btn" onclick="restartExperience()" data-de="Nochmal" data-en="Start Over">Nochmal</button>
     </div>
 
     <script>
@@ -126,7 +131,7 @@
         let selectedKeywords = [];
 
         // Language toggle functionality
-        document.querySelectorAll('.lang-btn').forEach(btn => {
+        document.querySelectorAll('.btn--outline').forEach(btn => {
             btn.addEventListener('click', function() {
                 const lang = this.dataset.lang;
                 setLanguage(lang);
@@ -137,7 +142,7 @@
             currentLanguage = lang;
             
             // Update button states
-            document.querySelectorAll('.lang-btn').forEach(btn => {
+            document.querySelectorAll('.btn--outline').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
             });
             
@@ -320,8 +325,13 @@
                     const text1 = currentLanguage === 'de' ? roundScenarios[i][0].textDE : roundScenarios[i][0].textEN;
                     const text2 = currentLanguage === 'de' ? roundScenarios[i][1].textDE : roundScenarios[i][1].textEN;
                     
-                    boxes[0].querySelector('p').textContent = text1;
-                    boxes[1].querySelector('p').textContent = text2;
+                    // Store full text in data attribute, clear visible text
+                    const p1 = boxes[0].querySelector('p');
+                    const p2 = boxes[1].querySelector('p');
+                    p1.dataset.fullText = text1;
+                    p2.dataset.fullText = text2;
+                    p1.textContent = '';
+                    p2.textContent = '';
                     
                     // Remove any existing click handlers to prevent duplicates
                     const newBox0 = boxes[0].cloneNode(true);
@@ -344,6 +354,26 @@
                     });
                 }
             }
+        }
+        
+        // Typewriter animation for scenario text
+        function typewriterAnimate(screenId) {
+            const boxes = document.querySelectorAll(`#${screenId} .scenario-box p`);
+            
+            boxes.forEach(p => {
+                const fullText = p.dataset.fullText || '';
+                p.textContent = '';
+                let charIndex = 0;
+                
+                const typeInterval = setInterval(() => {
+                    if (charIndex < fullText.length) {
+                        p.textContent += fullText[charIndex];
+                        charIndex++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, 15); // 15ms per character - fast but visible
+            });
         }
 
         let isProcessingChoice = false; // Prevent double-clicks
@@ -379,6 +409,20 @@
             
             console.log('Total practices collected:', selectedPractices.length);
             console.log('Total keywords collected:', selectedKeywords.length);
+            
+            // Update progress bar immediately (while blinking)
+            const nextScenarioNumber = roundIndex + 2; // Current is roundIndex+1, next is roundIndex+2
+            const progressFill = document.getElementById('progress-fill');
+            const progressIndicator = document.getElementById('progress-indicator');
+            if (nextScenarioNumber <= 6) {
+                // Moving to next scenario
+                const fillPercent = (nextScenarioNumber / 6) * 100;
+                progressFill.style.width = `${fillPercent}%`;
+                progressIndicator.textContent = `${nextScenarioNumber}/6`;
+            } else {
+                // Completing last scenario - fill to 100%
+                progressFill.style.width = '100%';
+            }
             
             // Visual feedback: hide other card, blink selected card
             const screenId = `scenario-${roundIndex + 1}`;
@@ -417,7 +461,7 @@
 
 
         // Start button click - move to first scenario
-        document.querySelector('.start-button').addEventListener('click', function(e) {
+        document.querySelector('.btn--lg').addEventListener('click', function(e) {
             e.stopPropagation();
             console.log('Start button clicked');
             ensureAudioPlaying(); // Ensure audio is playing (fallback if autoplay was blocked)
@@ -429,6 +473,24 @@
             nextScreen();
         });
 
+        function updateProgressBar(screenIndex) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            const progressIndicator = document.getElementById('progress-indicator');
+            
+            // Show progress bar only during scenarios (screens 1-6)
+            if (screenIndex >= 1 && screenIndex <= 6) {
+                progressBar.classList.remove('hidden');
+                const scenarioNumber = screenIndex; // 1-6
+                progressIndicator.textContent = `${scenarioNumber}/6`;
+                // Fill width: indicator takes about 15%, rest fills proportionally
+                const fillPercent = (scenarioNumber / 6) * 100;
+                progressFill.style.width = `${fillPercent}%`;
+            } else {
+                progressBar.classList.add('hidden');
+            }
+        }
+        
         function nextScreen() {
             console.log('=== nextScreen called, currentScreen:', currentScreen, 'screenName:', screens[currentScreen], '===');
             
@@ -446,12 +508,20 @@
             // Update animation intensity based on current screen
             updateAnimationIntensity(currentScreen);
             
+            // Update progress bar
+            updateProgressBar(currentScreen);
+            
             // Show next screen if it exists
             if (currentScreen < screens.length) {
                 const nextScreenElement = document.getElementById(screens[currentScreen]);
                 if (nextScreenElement) {
                     nextScreenElement.classList.remove('hidden');
                     console.log('Showing screen:', screens[currentScreen]);
+                    
+                    // Trigger typewriter animation for scenario screens
+                    if (screens[currentScreen].startsWith('scenario-')) {
+                        typewriterAnimate(screens[currentScreen]);
+                    }
                 } else {
                     console.error('Screen element not found:', screens[currentScreen]);
                 }
@@ -474,42 +544,27 @@
         }
         
         function populateFinishScreen() {
-            // Populate practices
+            // Populate practices - show only 3 random ones as a paragraph
             const practicesContainer = document.getElementById('practices-container');
             practicesContainer.innerHTML = '';
             
             if (selectedPractices.length > 0) {
-                selectedPractices.forEach(practice => {
-                    const p = document.createElement('p');
-                    p.className = 'practice-item';
-                    p.textContent = practice;
-                    practicesContainer.appendChild(p);
-                });
+                // Shuffle and take up to 3 practices
+                const shuffledPractices = shuffleArray([...selectedPractices]);
+                const displayPractices = shuffledPractices.slice(0, 3);
+                
+                // Combine into a single paragraph
+                const p = document.createElement('p');
+                p.className = 'practice-paragraph';
+                p.textContent = displayPractices.join(' ');
+                practicesContainer.appendChild(p);
             } else {
                 const p = document.createElement('p');
-                p.className = 'practice-item';
+                p.className = 'practice-paragraph';
                 p.textContent = currentLanguage === 'de' 
                     ? 'Keine spezifischen Praktiken für deine Auswahl verfügbar.' 
                     : 'No specific practices available for your selection.';
                 practicesContainer.appendChild(p);
-            }
-            
-            // Populate keywords
-            const keywordsList = document.getElementById('keywords-list');
-            keywordsList.innerHTML = '';
-            
-            if (selectedKeywords.length > 0) {
-                selectedKeywords.forEach(keyword => {
-                    const li = document.createElement('li');
-                    li.textContent = keyword;
-                    keywordsList.appendChild(li);
-                });
-            } else {
-                const li = document.createElement('li');
-                li.textContent = currentLanguage === 'de' 
-                    ? 'Keine Themen gesammelt' 
-                    : 'No topics collected';
-                keywordsList.appendChild(li);
             }
         }
         
@@ -523,6 +578,9 @@
             
             // Reset animation intensity
             updateAnimationIntensity(0);
+            
+            // Hide progress bar
+            updateProgressBar(0);
             
             // Switch back to loop_01
             loopAudio02.pause();
