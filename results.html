@@ -225,7 +225,9 @@
             // Try new format first (with timestamp)
             if (params.data) {
                 try {
-                    const decoded = decodeURIComponent(escape(atob(params.data)));
+                    // Decode base64, then decodeURIComponent to handle unicode
+                    const decoded = decodeURIComponent(atob(params.data));
+                    console.log('Decoded string:', decoded);
                     const data = JSON.parse(decoded);
                     return {
                         practices: data.practices || [],
@@ -233,6 +235,7 @@
                     };
                 } catch (e) {
                     console.error('Error decoding data:', e);
+                    console.error('Raw data param:', params.data);
                 }
             }
             
@@ -350,7 +353,13 @@
         // Initialize page
         function init() {
             const params = getUrlParams();
+            console.log('URL Params:', params);
+            console.log('Raw data param:', params.data);
+            
             const data = decodeData(params);
+            console.log('Decoded data:', data);
+            console.log('Practices:', data.practices);
+            
             currentPractices = data.practices;
             currentTimestamp = data.timestamp;
             

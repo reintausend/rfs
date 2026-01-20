@@ -590,6 +590,8 @@
             }
             
             // Generate QR code
+            console.log('Practices for QR:', practicesForQR);
+            console.log('selectedPracticesData:', selectedPracticesData);
             generateResultsQRCode(practicesForQR);
         }
         
@@ -614,19 +616,26 @@
                 timestamp: timestamp
             };
             const dataJSON = JSON.stringify(dataToEncode);
-            const encodedData = btoa(unescape(encodeURIComponent(dataJSON))); // Handle unicode
+            // Use encodeURIComponent to handle unicode, then encode that as base64
+            const encodedData = btoa(encodeURIComponent(dataJSON));
             
             // Generate unique session ID
             const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
             
             // Build the URL for results page (GitHub Pages compatible)
-            const pathArray = window.location.pathname.split('/');
-            pathArray.pop(); // Remove current file (index.html or empty)
-            const basePath = pathArray.join('/');
-            const resultsUrl = `${window.location.origin}${basePath}/results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
+            let basePath = window.location.pathname;
+            // Remove index.html if present
+            if (basePath.endsWith('index.html')) {
+                basePath = basePath.slice(0, -10);
+            }
+            // Remove trailing slash if present, then add it back
+            basePath = basePath.replace(/\/$/, '') + '/';
+            const resultsUrl = `${window.location.origin}${basePath}results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
             
             console.log('QR Code URL:', resultsUrl);
             console.log('URL length:', resultsUrl.length);
+            console.log('Data to encode:', dataToEncode);
+            console.log('Encoded data:', encodedData);
             
             try {
                 // Create QR code using qrcode-generator library
