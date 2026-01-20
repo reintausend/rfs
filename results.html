@@ -480,18 +480,10 @@
             // Load scenarios CSV for displaying top scenarios text
             await loadScenariosCSV();
             
-            // Fetch and display top scenarios using hardcoded API URL
+            // Fetch and display top scenarios
             if (GOOGLE_SHEETS_API_URL) {
                 topScenariosData = await fetchTopScenarios(GOOGLE_SHEETS_API_URL);
                 displayTopScenarios(topScenariosData, params.lang);
-            } else {
-                // No API URL configured
-                const container = document.getElementById('top-scenarios-container');
-                container.innerHTML = `<p class="loading-text">${
-                    params.lang === 'de' 
-                        ? 'Statistiken nicht verfügbar.' 
-                        : 'Statistics not available.'
-                }</p>`;
             }
         }
 
