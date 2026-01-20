@@ -616,8 +616,8 @@
                 timestamp: timestamp
             };
             const dataJSON = JSON.stringify(dataToEncode);
-            // Use encodeURIComponent to handle unicode, then encode that as base64
-            const encodedData = btoa(encodeURIComponent(dataJSON));
+            // Properly encode UTF-8 to base64
+            const encodedData = btoa(unescape(encodeURIComponent(dataJSON)));
             
             // Generate unique session ID
             const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -645,12 +645,13 @@
                 qr.addData(resultsUrl);
                 qr.make();
                 
-                // Create image element
+                // Create image element with larger cell size for crisp squares
                 const img = document.createElement('img');
-                img.src = qr.createDataURL(4); // 4 = cell size in pixels
+                img.src = qr.createDataURL(10, 0); // 10 = cell size, 0 = no margin
                 img.alt = 'QR Code';
                 img.style.width = '180px';
                 img.style.height = '180px';
+                img.style.imageRendering = 'pixelated'; // Keep squares sharp when scaled
                 qrContainer.appendChild(img);
                 
                 console.log('QR code generated successfully');

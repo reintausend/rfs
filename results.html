@@ -225,8 +225,8 @@
             // Try new format first (with timestamp)
             if (params.data) {
                 try {
-                    // Decode base64, then decodeURIComponent to handle unicode
-                    const decoded = decodeURIComponent(atob(params.data));
+                    // Properly decode base64 to UTF-8
+                    const decoded = decodeURIComponent(escape(atob(params.data)));
                     console.log('Decoded string:', decoded);
                     const data = JSON.parse(decoded);
                     return {
@@ -242,7 +242,7 @@
             // Fallback to legacy format
             if (params.practices) {
                 try {
-                    const decoded = atob(params.practices);
+                    const decoded = decodeURIComponent(escape(atob(params.practices)));
                     return {
                         practices: JSON.parse(decoded),
                         timestamp: null
