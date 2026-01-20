@@ -98,6 +98,86 @@
             font-size: 16px;
             line-height: 1.6;
         }
+
+        /* Top Scenarios Section */
+        .top-scenarios-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .top-scenarios-title {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .top-scenario-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 14px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+
+        .top-scenario-rank {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .top-scenario-rank.rank-1 {
+            background-color: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        .top-scenario-rank.rank-2 {
+            background-color: rgba(192, 192, 192, 0.3);
+            color: #c0c0c0;
+        }
+
+        .top-scenario-rank.rank-3 {
+            background-color: rgba(205, 127, 50, 0.3);
+            color: #cd7f32;
+        }
+
+        .top-scenario-text {
+            flex: 1;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
+        }
+
+        .top-scenario-count {
+            flex-shrink: 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 4px 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .loading-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .error-text {
+            color: rgba(255, 100, 100, 0.7);
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +194,14 @@
 
             <p class="timestamp" id="timestamp-text"></p>
 
+            <!-- Top Scenarios Section -->
+            <div class="top-scenarios-section" id="top-scenarios-section">
+                <h2 class="top-scenarios-title" id="top-scenarios-title">Die beliebtesten Zukunftsszenarien</h2>
+                <div id="top-scenarios-container">
+                    <p class="loading-text" id="loading-text">Lade Daten...</p>
+                </div>
+            </div>
+
             <div class="language-toggle">
                 <button class="lang-btn active" data-lang="de" onclick="switchLanguage('de')">DE</button>
                 <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
@@ -122,6 +210,10 @@
     </div>
 
     <script>
+        // Store scenarios data loaded from CSV
+        let scenariosData = {};
+        let topScenariosData = [];
+        
         // Parse URL parameters
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
@@ -129,7 +221,8 @@
                 data: params.get('d'),
                 practices: params.get('p'),
                 lang: params.get('lang') || 'de',
-                id: params.get('id')
+                id: params.get('id'),
+                apiUrl: params.get('api') ? decodeURIComponent(params.get('api')) : null
             };
         }
 
@@ -218,6 +311,7 @@
             updateUILanguage(lang);
             displayPractices(currentPractices, lang);
             updateTimestamp(lang);
+            updateTopScenariosLanguage(lang);
             
             const url = new URL(window.location);
             url.searchParams.set('lang', lang);
@@ -235,8 +329,160 @@
             }
         }
 
+        // Load scenarios from CSV file
+        async function loadScenariosCSV() {
+            try {
+                const response = await fetch('assets/csv/scenarios.csv');
+                const csvText = await response.text();
+                
+                const lines = csvText.trim().split('\n');
+                // Skip header, parse each line
+                for (let i = 1; i < lines.length; i++) {
+                    const columns = parseCSVLine(lines[i]);
+                    const id = columns[0]?.trim();
+                    const textDE = columns[1]?.trim();
+                    const textEN = columns[2]?.trim();
+                    
+                    if (id && textDE) {
+                        scenariosData[id] = {
+                            textDE: textDE,
+                            textEN: textEN || textDE
+                        };
+                    }
+                }
+                console.log('Loaded scenarios:', Object.keys(scenariosData).length);
+            } catch (error) {
+                console.error('Failed to load scenarios CSV:', error);
+            }
+        }
+        
+        // Parse CSV line with quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+        
+        // Fetch top scenarios from Google Sheets API using JSONP (avoids redirect issues)
+        function fetchTopScenarios(apiUrl) {
+            return new Promise((resolve) => {
+                if (!apiUrl) {
+                    console.log('No API URL provided, skipping top scenarios fetch');
+                    resolve(null);
+                    return;
+                }
+                
+                try {
+                    // Create unique callback name
+                    const callbackName = 'jsonpCallback_' + Date.now();
+                    
+                    // Build URL with callback parameter
+                    const url = new URL(apiUrl);
+                    url.searchParams.set('action', 'getTop');
+                    url.searchParams.set('callback', callbackName);
+                    
+                    // Set up callback function
+                    window[callbackName] = function(data) {
+                        console.log('Top scenarios data:', data);
+                        // Clean up
+                        delete window[callbackName];
+                        document.body.removeChild(script);
+                        resolve(data.topScenarios || []);
+                    };
+                    
+                    // Create script element for JSONP
+                    const script = document.createElement('script');
+                    script.src = url.toString();
+                    script.onerror = function() {
+                        console.error('JSONP request failed');
+                        delete window[callbackName];
+                        document.body.removeChild(script);
+                        resolve(null);
+                    };
+                    
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        if (window[callbackName]) {
+                            console.error('JSONP request timed out');
+                            delete window[callbackName];
+                            if (script.parentNode) {
+                                document.body.removeChild(script);
+                            }
+                            resolve(null);
+                        }
+                    }, 10000);
+                    
+                    document.body.appendChild(script);
+                    
+                } catch (error) {
+                    console.error('Failed to fetch top scenarios:', error);
+                    resolve(null);
+                }
+            });
+        }
+        
+        // Display top scenarios
+        function displayTopScenarios(topScenarios, lang) {
+            const container = document.getElementById('top-scenarios-container');
+            const section = document.getElementById('top-scenarios-section');
+            const titleEl = document.getElementById('top-scenarios-title');
+            
+            // Update title based on language
+            titleEl.textContent = lang === 'de' 
+                ? 'Die beliebtesten Zukunftsszenarien' 
+                : 'The Most Popular Future Scenarios';
+            
+            // If no data, hide section or show message
+            if (!topScenarios || topScenarios.length === 0) {
+                container.innerHTML = `<p class="loading-text">${
+                    lang === 'de' 
+                        ? 'Noch keine Daten verfügbar.' 
+                        : 'No data available yet.'
+                }</p>`;
+                return;
+            }
+            
+            // Build HTML for top 3 scenarios
+            let html = '';
+            topScenarios.slice(0, 3).forEach((item, index) => {
+                const scenario = scenariosData[item.scenarioId];
+                const text = scenario 
+                    ? (lang === 'de' ? scenario.textDE : scenario.textEN)
+                    : `Szenario ${item.scenarioId}`;
+                
+                html += `
+                    <div class="top-scenario-item">
+                        <div class="top-scenario-rank rank-${index + 1}">${index + 1}</div>
+                        <p class="top-scenario-text">${text}</p>
+                        <span class="top-scenario-count">${item.count}×</span>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Update top scenarios language
+        function updateTopScenariosLanguage(lang) {
+            displayTopScenarios(topScenariosData, lang);
+        }
+
         // Initialize
-        function init() {
+        async function init() {
             const params = getUrlParams();
             const data = decodeData(params);
             
@@ -246,6 +492,23 @@
             updateUILanguage(params.lang);
             displayPractices(currentPractices, params.lang);
             updateTimestamp(params.lang);
+            
+            // Load scenarios CSV for displaying top scenarios text
+            await loadScenariosCSV();
+            
+            // Fetch and display top scenarios
+            if (params.apiUrl) {
+                topScenariosData = await fetchTopScenarios(params.apiUrl);
+                displayTopScenarios(topScenariosData, params.lang);
+            } else {
+                // No API URL - hide the section or show disabled message
+                const container = document.getElementById('top-scenarios-container');
+                container.innerHTML = `<p class="loading-text">${
+                    params.lang === 'de' 
+                        ? 'Statistiken nicht verfügbar.' 
+                        : 'Statistics not available.'
+                }</p>`;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', init);

@@ -131,6 +131,53 @@
         let selectedPractices = [];
         let selectedPracticesData = []; // Stores {practiceDE, practiceEN} objects
         let selectedKeywords = [];
+        
+        // Track selected scenario IDs for results page
+        let selectedScenarioIds = [];
+        
+        // ========== GOOGLE SHEETS TRACKING ==========
+        // Replace this URL with your Google Apps Script Web App URL after setup
+        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzoD0YcpBi5rxJPGjA2VLeGHdcH_X3f3WLSbIM9wFj92vYpq6DsmenPtYK9uO2oKncUzg/exec'; // Leave empty to disable tracking
+        
+        // Generate unique session ID for this user's session
+        const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        
+        // Send tracking data to Google Sheets
+        async function trackSelection(roundIndex, optionA, optionB, chosenOption, chosenScenarioId) {
+            if (!GOOGLE_SHEETS_API_URL) {
+                console.log('Tracking disabled (no API URL configured)');
+                return;
+            }
+            
+            const trackingData = {
+                timestamp: new Date().toISOString(),
+                date: new Date().toISOString().split('T')[0],
+                sessionId: sessionId,
+                round: roundIndex + 1,
+                optionA_id: optionA.id,
+                optionA_textDE: optionA.textDE.substring(0, 100), // Truncate for storage
+                optionB_id: optionB.id,
+                optionB_textDE: optionB.textDE.substring(0, 100),
+                chosen: chosenOption === 0 ? 'A' : 'B',
+                chosenScenarioId: chosenScenarioId,
+                language: currentLanguage
+            };
+            
+            try {
+                // Send as POST request to Google Apps Script
+                fetch(GOOGLE_SHEETS_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(trackingData)
+                });
+                console.log('Tracking data sent:', trackingData);
+            } catch (error) {
+                console.error('Failed to send tracking data:', error);
+            }
+        }
 
         // Language toggle functionality
         document.querySelectorAll('.btn--outline').forEach(btn => {
@@ -312,10 +359,11 @@
             
             console.log('Round scenarios created:', roundScenarios);
             
-            // Reset selected practices and keywords
+            // Reset selected practices, keywords, and scenario IDs
             selectedPractices = [];
             selectedPracticesData = [];
             selectedKeywords = [];
+            selectedScenarioIds = [];
             
             // Populate the scenario boxes
             populateScenarios();
@@ -395,7 +443,15 @@
             console.log('=== Processing choice for round', roundIndex + 1, 'choice', choiceIndex, '===');
             
             const selectedScenario = roundScenarios[roundIndex][choiceIndex];
+            const optionA = roundScenarios[roundIndex][0];
+            const optionB = roundScenarios[roundIndex][1];
             console.log('Selected scenario:', selectedScenario);
+            
+            // Track the selection to Google Sheets
+            trackSelection(roundIndex, optionA, optionB, choiceIndex, selectedScenario.id);
+            
+            // Store selected scenario ID for results page
+            selectedScenarioIds.push(selectedScenario.id);
             
             // Collect practice if it exists
             if (selectedScenario.practice && selectedScenario.practice.trim()) {
@@ -610,10 +666,11 @@
             // Generate timestamp
             const timestamp = new Date().toISOString();
             
-            // Encode practices as base64 JSON (include timestamp)
+            // Encode practices as base64 JSON (include timestamp and selected scenario IDs)
             const dataToEncode = {
                 practices: practices,
-                timestamp: timestamp
+                timestamp: timestamp,
+                selectedScenarioIds: selectedScenarioIds
             };
             const dataJSON = JSON.stringify(dataToEncode);
             // Properly encode UTF-8 to base64
@@ -630,7 +687,11 @@
             }
             // Remove trailing slash if present, then add it back
             basePath = basePath.replace(/\/$/, '') + '/';
-            const resultsUrl = `${window.location.origin}${basePath}results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
+            // Build URL - include API URL if configured (for fetching top scenarios on results page)
+            let resultsUrl = `${window.location.origin}${basePath}results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
+            if (GOOGLE_SHEETS_API_URL) {
+                resultsUrl += `&api=${encodeURIComponent(GOOGLE_SHEETS_API_URL)}`;
+            }
             
             console.log('QR Code URL:', resultsUrl);
             console.log('URL length:', resultsUrl.length);
