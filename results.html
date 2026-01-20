@@ -380,33 +380,49 @@
             return result;
         }
         
-        // Fetch top scenarios from Google Sheets API
-        async function fetchTopScenarios(apiUrl) {
-            if (!apiUrl) {
-                console.log('No API URL provided');
-                return null;
-            }
-            
-            console.log('Fetching top scenarios from:', apiUrl);
-            
-            try {
-                const url = apiUrl + '?action=getTop';
-                console.log('Fetch URL:', url);
+        // Fetch top scenarios from Google Sheets API using JSONP
+        function fetchTopScenarios(apiUrl) {
+            return new Promise((resolve) => {
+                if (!apiUrl) {
+                    console.log('No API URL provided');
+                    resolve(null);
+                    return;
+                }
                 
-                const response = await fetch(url, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                const callbackName = 'rfsCallback_' + Date.now();
+                const url = apiUrl + '?action=getTop&callback=' + callbackName;
                 
-                console.log('Response status:', response.status);
-                const data = await response.json();
-                console.log('Response data:', data);
+                console.log('JSONP URL:', url);
                 
-                return data.topScenarios || [];
-            } catch (error) {
-                console.error('Fetch error:', error);
-                return null;
-            }
+                // Create callback function
+                window[callbackName] = function(data) {
+                    console.log('JSONP response:', data);
+                    delete window[callbackName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    resolve(data.topScenarios || []);
+                };
+                
+                // Create script element
+                const script = document.createElement('script');
+                script.src = url;
+                script.onerror = function() {
+                    console.error('JSONP failed');
+                    delete window[callbackName];
+                    resolve(null);
+                };
+                
+                // Timeout after 8 seconds
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        console.error('JSONP timeout');
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                        resolve(null);
+                    }
+                }, 8000);
+                
+                document.body.appendChild(script);
+            });
         }
         
         // Format current date as DD.MM.YYYY
