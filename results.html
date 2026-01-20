@@ -210,6 +210,10 @@
     </div>
 
     <script>
+        // ========== CONFIGURATION ==========
+        // Paste your Google Apps Script Web App URL here:
+        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzoD0YcpBi5rxJPGjA2VLeGHdcH_X3f3WLSbIM9wFj92vYpq6DsmenPtYK9uO2oKncUzg/exec';
+        
         // Store scenarios data loaded from CSV
         let scenariosData = {};
         let topScenariosData = [];
@@ -221,8 +225,7 @@
                 data: params.get('d'),
                 practices: params.get('p'),
                 lang: params.get('lang') || 'de',
-                id: params.get('id'),
-                apiUrl: params.get('api') ? decodeURIComponent(params.get('api')) : null
+                id: params.get('id')
             };
         }
 
@@ -456,12 +459,12 @@
                 ? `Top 3 Szenarien: ${dateStr}` 
                 : `Top 3 Scenarios: ${dateStr}`;
             
-            // If no data, hide section or show message
+            // If no data, show message for today
             if (!topScenarios || topScenarios.length === 0) {
                 container.innerHTML = `<p class="loading-text">${
                     lang === 'de' 
-                        ? 'Noch keine Daten verfügbar.' 
-                        : 'No data available yet.'
+                        ? 'Heute noch keine Auswertung vorhanden. Sei der/die Erste!' 
+                        : 'No selections recorded today yet. Be the first!'
                 }</p>`;
                 return;
             }
@@ -506,12 +509,12 @@
             // Load scenarios CSV for displaying top scenarios text
             await loadScenariosCSV();
             
-            // Fetch and display top scenarios
-            if (params.apiUrl) {
-                topScenariosData = await fetchTopScenarios(params.apiUrl);
+            // Fetch and display top scenarios using hardcoded API URL
+            if (GOOGLE_SHEETS_API_URL) {
+                topScenariosData = await fetchTopScenarios(GOOGLE_SHEETS_API_URL);
                 displayTopScenarios(topScenariosData, params.lang);
             } else {
-                // No API URL - hide the section or show disabled message
+                // No API URL configured
                 const container = document.getElementById('top-scenarios-container');
                 container.innerHTML = `<p class="loading-text">${
                     params.lang === 'de' 
