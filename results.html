@@ -212,7 +212,7 @@
     <script>
         // ========== CONFIGURATION ==========
         // Paste your Google Apps Script Web App URL here:
-        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzoD0YcpBi5rxJPGjA2VLeGHdcH_X3f3WLSbIM9wFj92vYpq6DsmenPtYK9uO2oKncUzg/exec';
+        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwTWWHTaShN8Dh8mIJTLIUq3IY3JyTuWWGmucLBThCV81EYfrcrZU-DwsfMuCY43unl6w/exec';
         
         // Store scenarios data loaded from CSV
         let scenariosData = {};
@@ -380,7 +380,7 @@
             return result;
         }
         
-        // Fetch top scenarios from Google Sheets API using JSONP (avoids redirect issues)
+        // Fetch top scenarios from Google Sheets API using JSONP
         function fetchTopScenarios(apiUrl) {
             return new Promise((resolve) => {
                 if (!apiUrl) {
@@ -388,6 +388,8 @@
                     resolve(null);
                     return;
                 }
+                
+                console.log('Fetching top scenarios from:', apiUrl);
                 
                 try {
                     // Create unique callback name
@@ -398,29 +400,35 @@
                     url.searchParams.set('action', 'getTop');
                     url.searchParams.set('callback', callbackName);
                     
+                    console.log('JSONP URL:', url.toString());
+                    
                     // Set up callback function
                     window[callbackName] = function(data) {
-                        console.log('Top scenarios data:', data);
+                        console.log('✅ JSONP callback received:', data);
                         // Clean up
                         delete window[callbackName];
-                        document.body.removeChild(script);
+                        if (script.parentNode) {
+                            document.body.removeChild(script);
+                        }
                         resolve(data.topScenarios || []);
                     };
                     
                     // Create script element for JSONP
                     const script = document.createElement('script');
                     script.src = url.toString();
-                    script.onerror = function() {
-                        console.error('JSONP request failed');
+                    script.onerror = function(e) {
+                        console.error('❌ JSONP script error:', e);
                         delete window[callbackName];
-                        document.body.removeChild(script);
+                        if (script.parentNode) {
+                            document.body.removeChild(script);
+                        }
                         resolve(null);
                     };
                     
                     // Timeout after 10 seconds
                     setTimeout(() => {
                         if (window[callbackName]) {
-                            console.error('JSONP request timed out');
+                            console.error('⏱️ JSONP request timed out');
                             delete window[callbackName];
                             if (script.parentNode) {
                                 document.body.removeChild(script);
@@ -430,6 +438,7 @@
                     }, 10000);
                     
                     document.body.appendChild(script);
+                    console.log('JSONP script added to page');
                     
                 } catch (error) {
                     console.error('Failed to fetch top scenarios:', error);

@@ -137,7 +137,7 @@
         
         // ========== GOOGLE SHEETS TRACKING ==========
         // Replace this URL with your Google Apps Script Web App URL after setup
-        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbzoD0YcpBi5rxJPGjA2VLeGHdcH_X3f3WLSbIM9wFj92vYpq6DsmenPtYK9uO2oKncUzg/exec'; // Leave empty to disable tracking
+        const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwTWWHTaShN8Dh8mIJTLIUq3IY3JyTuWWGmucLBThCV81EYfrcrZU-DwsfMuCY43unl6w/exec'; // Leave empty to disable tracking
         
         // Generate unique session ID for this user's session
         const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -687,11 +687,8 @@
             }
             // Remove trailing slash if present, then add it back
             basePath = basePath.replace(/\/$/, '') + '/';
-            // Build URL - include API URL if configured (for fetching top scenarios on results page)
+            // Build URL (API URL is hardcoded in results.html, no need to pass it)
             let resultsUrl = `${window.location.origin}${basePath}results.html?d=${encodedData}&lang=${currentLanguage}&id=${sessionId}`;
-            if (GOOGLE_SHEETS_API_URL) {
-                resultsUrl += `&api=${encodeURIComponent(GOOGLE_SHEETS_API_URL)}`;
-            }
             
             console.log('QR Code URL:', resultsUrl);
             console.log('URL length:', resultsUrl.length);
