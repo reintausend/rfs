@@ -380,71 +380,33 @@
             return result;
         }
         
-        // Fetch top scenarios from Google Sheets API using JSONP
-        function fetchTopScenarios(apiUrl) {
-            return new Promise((resolve) => {
-                if (!apiUrl) {
-                    console.log('No API URL provided, skipping top scenarios fetch');
-                    resolve(null);
-                    return;
-                }
+        // Fetch top scenarios from Google Sheets API
+        async function fetchTopScenarios(apiUrl) {
+            if (!apiUrl) {
+                console.log('No API URL provided');
+                return null;
+            }
+            
+            console.log('Fetching top scenarios from:', apiUrl);
+            
+            try {
+                const url = apiUrl + '?action=getTop';
+                console.log('Fetch URL:', url);
                 
-                console.log('Fetching top scenarios from:', apiUrl);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
                 
-                try {
-                    // Create unique callback name
-                    const callbackName = 'jsonpCallback_' + Date.now();
-                    
-                    // Build URL with callback parameter
-                    const url = new URL(apiUrl);
-                    url.searchParams.set('action', 'getTop');
-                    url.searchParams.set('callback', callbackName);
-                    
-                    console.log('JSONP URL:', url.toString());
-                    
-                    // Set up callback function
-                    window[callbackName] = function(data) {
-                        console.log('✅ JSONP callback received:', data);
-                        // Clean up
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            document.body.removeChild(script);
-                        }
-                        resolve(data.topScenarios || []);
-                    };
-                    
-                    // Create script element for JSONP
-                    const script = document.createElement('script');
-                    script.src = url.toString();
-                    script.onerror = function(e) {
-                        console.error('❌ JSONP script error:', e);
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            document.body.removeChild(script);
-                        }
-                        resolve(null);
-                    };
-                    
-                    // Timeout after 10 seconds
-                    setTimeout(() => {
-                        if (window[callbackName]) {
-                            console.error('⏱️ JSONP request timed out');
-                            delete window[callbackName];
-                            if (script.parentNode) {
-                                document.body.removeChild(script);
-                            }
-                            resolve(null);
-                        }
-                    }, 10000);
-                    
-                    document.body.appendChild(script);
-                    console.log('JSONP script added to page');
-                    
-                } catch (error) {
-                    console.error('Failed to fetch top scenarios:', error);
-                    resolve(null);
-                }
-            });
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                return data.topScenarios || [];
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return null;
+            }
         }
         
         // Format current date as DD.MM.YYYY
