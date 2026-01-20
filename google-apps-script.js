@@ -25,7 +25,7 @@
  */
 
 // ⚠️ PASTE YOUR GOOGLE SHEET ID HERE (from the spreadsheet URL)
-const SHEET_ID = 'YOUR_SHEET_ID_HERE';
+const SHEET_ID = '1I6GKSEVKUAtBEar5_FJSfg0P3mxJ25XDxLN2NobTpYo';
 
 // Get the spreadsheet by ID
 function getSheet() {
