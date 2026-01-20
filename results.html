@@ -196,7 +196,7 @@
 
             <!-- Top Scenarios Section -->
             <div class="top-scenarios-section" id="top-scenarios-section">
-                <h2 class="top-scenarios-title" id="top-scenarios-title">Die beliebtesten Zukunftsszenarien</h2>
+                <h2 class="top-scenarios-title" id="top-scenarios-title">Top 3 Szenarien</h2>
                 <div id="top-scenarios-container">
                     <p class="loading-text" id="loading-text">Lade Daten...</p>
                 </div>
@@ -435,16 +435,26 @@
             });
         }
         
+        // Format current date as DD.MM.YYYY
+        function formatCurrentDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
         // Display top scenarios
         function displayTopScenarios(topScenarios, lang) {
             const container = document.getElementById('top-scenarios-container');
             const section = document.getElementById('top-scenarios-section');
             const titleEl = document.getElementById('top-scenarios-title');
             
-            // Update title based on language
+            // Update title with date
+            const dateStr = formatCurrentDate();
             titleEl.textContent = lang === 'de' 
-                ? 'Die beliebtesten Zukunftsszenarien' 
-                : 'The Most Popular Future Scenarios';
+                ? `Top 3 Szenarien: ${dateStr}` 
+                : `Top 3 Scenarios: ${dateStr}`;
             
             // If no data, hide section or show message
             if (!topScenarios || topScenarios.length === 0) {

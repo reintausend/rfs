@@ -106,21 +106,35 @@ function doGet(e) {
   }
 }
 
-// Get top selected scenarios (returns data object)
+// Get today's date as YYYY-MM-DD string
+function getTodayString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Get top selected scenarios for TODAY only (returns data object)
 function getTopScenariosData() {
   const sheet = getSheet();
   const data = sheet.getDataRange().getValues();
+  const todayStr = getTodayString();
   
-  // Skip header row, count scenario selections
+  // Skip header row, count scenario selections from TODAY only
   const counts = {};
+  let todaySelections = 0;
   
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
+    const rowDate = row[1]; // Column B (Date) - format: YYYY-MM-DD
     const chosenScenarioId = row[9]; // Column J (0-indexed = 9)
     
-    if (chosenScenarioId) {
+    // Only count if date matches today
+    if (rowDate === todayStr && chosenScenarioId) {
       const id = String(chosenScenarioId);
       counts[id] = (counts[id] || 0) + 1;
+      todaySelections++;
     }
   }
   
@@ -132,7 +146,8 @@ function getTopScenariosData() {
   // Return top scenarios data
   return {
     success: true,
-    totalSelections: data.length - 1, // Exclude header
+    date: todayStr,
+    totalSelections: todaySelections,
     topScenarios: sorted.slice(0, 10) // Return top 10
   };
 }
