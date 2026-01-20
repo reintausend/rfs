@@ -6,15 +6,26 @@
     <title>Deine Praktiken | Your Practices</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Mobile-optimized results page */
+        /* Results page - matching survey style */
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-color: hsl(0, 0%, 100%);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         #bg-image-layer {
-            opacity: 0.3;
-            filter: blur(20px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-image: url('assets/images/bg_01.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 1;
+            filter: blur(6px);
         }
 
         .results-container {
@@ -23,98 +34,40 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 30px 20px;
+            padding: 40px 20px;
             position: relative;
             z-index: 10;
         }
 
-        .results-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 40px 30px;
-            max-width: 500px;
+        .results-box {
             width: 100%;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 0 100px rgba(255, 255, 255, 0.05);
-        }
-
-        .results-header {
-            text-align: center;
-            margin-bottom: 35px;
-            position: relative;
-        }
-
-        .results-header::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 50px 40px;
         }
 
         .results-title {
-            font-size: clamp(22px, 5vw, 28px);
+            font-size: 28px;
             color: #ffffff;
-            margin-bottom: 8px;
+            margin-bottom: 30px;
             font-weight: 700;
-            letter-spacing: 1px;
         }
 
-        .results-subtitle {
+        .practices-text {
+            font-size: 18px;
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .timestamp {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            margin-top: 20px;
         }
 
-        .practice-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 3px solid rgba(255, 255, 255, 0.4);
-            padding: 20px 25px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .practice-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-left-color: #fff;
-        }
-
-        .practice-text {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.6;
-        }
-
-        .practice-number {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .no-results {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            padding: 40px;
-        }
-
-        .no-results-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .language-switch {
+        .language-toggle {
             display: flex;
-            justify-content: center;
             gap: 10px;
             margin-top: 30px;
         }
@@ -122,65 +75,29 @@
         .lang-btn {
             font-family: 'Geist Mono', monospace;
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.6);
-            padding: 10px 20px;
-            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .lang-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         .lang-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: #1a1a2e;
-            border-color: transparent;
+            background-color: rgba(255, 255, 255, 0.85);
+            color: #000;
         }
 
-        .timestamp {
-            text-align: center;
-            margin-top: 25px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
+        .no-results {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            line-height: 1.6;
         }
-
-        .footer-note {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .practice-item {
-            animation: fadeInUp 0.5s ease forwards;
-            opacity: 0;
-        }
-
-        .practice-item:nth-child(1) { animation-delay: 0.1s; }
-        .practice-item:nth-child(2) { animation-delay: 0.2s; }
-        .practice-item:nth-child(3) { animation-delay: 0.3s; }
-        .practice-item:nth-child(4) { animation-delay: 0.4s; }
-        .practice-item:nth-child(5) { animation-delay: 0.5s; }
-        .practice-item:nth-child(6) { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
@@ -188,23 +105,19 @@
     <div id="bg-image-layer"></div>
 
     <div class="results-container">
-        <div class="results-card">
-            <div class="results-header">
-                <h1 class="results-title" id="title-text">Deine Praktiken für die Zukunft</h1>
-                <p class="results-subtitle" id="subtitle-text">Persönliche Auswahl</p>
-            </div>
-
-            <div id="practices-list">
+        <div class="results-box">
+            <h1 class="results-title" id="title-text">Deine Praktiken für die Zukunft</h1>
+            
+            <p class="practices-text" id="practices-text">
                 <!-- Practices will be inserted here -->
-            </div>
+            </p>
 
-            <div class="language-switch">
+            <p class="timestamp" id="timestamp-text"></p>
+
+            <div class="language-toggle">
                 <button class="lang-btn active" data-lang="de" onclick="switchLanguage('de')">DE</button>
                 <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
             </div>
-
-            <p class="timestamp" id="timestamp-text"></p>
-            <p class="footer-note" id="footer-text">Gespeichert für dich</p>
         </div>
     </div>
 
@@ -213,21 +126,18 @@
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                data: params.get('d'), // New format with timestamp
-                practices: params.get('p'), // Legacy format
+                data: params.get('d'),
+                practices: params.get('p'),
                 lang: params.get('lang') || 'de',
                 id: params.get('id')
             };
         }
 
-        // Decode data from URL (supports both old and new format)
+        // Decode data from URL
         function decodeData(params) {
-            // Try new format first (with timestamp)
             if (params.data) {
                 try {
-                    // Properly decode base64 to UTF-8
                     const decoded = decodeURIComponent(escape(atob(params.data)));
-                    console.log('Decoded string:', decoded);
                     const data = JSON.parse(decoded);
                     return {
                         practices: data.practices || [],
@@ -235,11 +145,9 @@
                     };
                 } catch (e) {
                     console.error('Error decoding data:', e);
-                    console.error('Raw data param:', params.data);
                 }
             }
             
-            // Fallback to legacy format
             if (params.practices) {
                 try {
                     const decoded = decodeURIComponent(escape(atob(params.practices)));
@@ -255,7 +163,7 @@
             return { practices: [], timestamp: null };
         }
         
-        // Format timestamp for display
+        // Format timestamp
         function formatTimestamp(isoString, lang) {
             if (!isoString) return '';
             try {
@@ -273,51 +181,30 @@
             }
         }
 
-        // Display practices
+        // Display practices as combined paragraph
         function displayPractices(practices, lang) {
-            const container = document.getElementById('practices-list');
-            container.innerHTML = '';
+            const container = document.getElementById('practices-text');
 
             if (!practices || practices.length === 0) {
-                container.innerHTML = `
-                    <div class="no-results">
-                        <div class="no-results-icon">✨</div>
-                        <p>${lang === 'de' ? 'Keine Praktiken gefunden.' : 'No practices found.'}</p>
-                        <p style="margin-top: 10px; font-size: 13px;">
-                            ${lang === 'de' 
-                                ? 'Starte eine neue Umfrage, um deine persönlichen Praktiken zu erhalten.' 
-                                : 'Start a new survey to get your personal practices.'}
-                        </p>
-                    </div>
-                `;
+                container.innerHTML = lang === 'de' 
+                    ? 'Keine Praktiken gefunden. Starte eine neue Umfrage, um deine persönlichen Praktiken zu erhalten.'
+                    : 'No practices found. Start a new survey to get your personal practices.';
                 return;
             }
 
-            const labelPrefix = lang === 'de' ? 'Praktik' : 'Practice';
-
-            practices.forEach((practice, index) => {
-                const text = lang === 'de' ? (practice.de || practice.text) : (practice.en || practice.text);
-                
-                const item = document.createElement('div');
-                item.className = 'practice-item';
-                item.innerHTML = `
-                    <span class="practice-number">${labelPrefix} ${index + 1}</span>
-                    <p class="practice-text">${text}</p>
-                `;
-                container.appendChild(item);
+            // Combine all practices into one paragraph
+            const texts = practices.map(practice => {
+                return lang === 'de' ? (practice.de || practice.text || practice) : (practice.en || practice.text || practice);
             });
+            
+            container.textContent = texts.join(' ');
         }
 
-        // Update UI text based on language
+        // Update UI language
         function updateUILanguage(lang) {
             document.getElementById('title-text').textContent = 
                 lang === 'de' ? 'Deine Praktiken für die Zukunft' : 'Your Practices for the Future';
-            document.getElementById('subtitle-text').textContent = 
-                lang === 'de' ? 'Persönliche Auswahl' : 'Personal Selection';
-            document.getElementById('footer-text').textContent = 
-                lang === 'de' ? 'Gespeichert für dich' : 'Saved for you';
             
-            // Update language button states
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
             });
@@ -332,33 +219,26 @@
             displayPractices(currentPractices, lang);
             updateTimestamp(lang);
             
-            // Update URL without reload
             const url = new URL(window.location);
             url.searchParams.set('lang', lang);
             window.history.replaceState({}, '', url);
         }
         
-        // Update timestamp display
+        // Update timestamp
         function updateTimestamp(lang) {
             const timestampEl = document.getElementById('timestamp-text');
             if (currentTimestamp) {
-                const formatted = formatTimestamp(currentTimestamp, lang);
-                timestampEl.textContent = formatted;
+                timestampEl.textContent = formatTimestamp(currentTimestamp, lang);
                 timestampEl.style.display = 'block';
             } else {
                 timestampEl.style.display = 'none';
             }
         }
 
-        // Initialize page
+        // Initialize
         function init() {
             const params = getUrlParams();
-            console.log('URL Params:', params);
-            console.log('Raw data param:', params.data);
-            
             const data = decodeData(params);
-            console.log('Decoded data:', data);
-            console.log('Practices:', data.practices);
             
             currentPractices = data.practices;
             currentTimestamp = data.timestamp;
@@ -368,7 +248,6 @@
             updateTimestamp(params.lang);
         }
 
-        // Run on page load
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
