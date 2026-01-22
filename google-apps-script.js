@@ -127,8 +127,18 @@ function getTopScenariosData() {
   
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    const rowDate = row[1]; // Column B (Date) - format: YYYY-MM-DD
+    let rowDate = row[1]; // Column B (Date)
     const chosenScenarioId = row[9]; // Column J (0-indexed = 9)
+    
+    // Convert date to string and trim, handle Date objects too
+    if (rowDate instanceof Date) {
+      const y = rowDate.getFullYear();
+      const m = String(rowDate.getMonth() + 1).padStart(2, '0');
+      const d = String(rowDate.getDate()).padStart(2, '0');
+      rowDate = `${y}-${m}-${d}`;
+    } else {
+      rowDate = String(rowDate).trim().substring(0, 10); // Take first 10 chars (YYYY-MM-DD)
+    }
     
     // Only count if date matches today
     if (rowDate === todayStr && chosenScenarioId) {
