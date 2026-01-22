@@ -193,11 +193,12 @@
         /* Mobile styles for results page */
         @media (max-width: 768px) {
             .results-container {
-                padding: 20px 15px;
+                padding: 15px;
             }
             
             .results-box {
                 padding: 25px 20px;
+                margin-top: 35px;
             }
             
             .results-title {
@@ -255,9 +256,13 @@
                 padding: 3px 6px;
             }
             
-            /* Language toggle - smaller and positioned outside content */
+            /* Language toggle - smaller and positioned above content, right-aligned */
             .language-toggle {
-                margin-bottom: 10px;
+                width: 100%;
+                max-width: none;
+                justify-content: flex-end;
+                margin-bottom: 0;
+                align-self: flex-end;
             }
             
             .lang-btn {
