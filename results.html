@@ -60,6 +60,14 @@
             margin-bottom: 30px;
         }
 
+        .practice-item {
+            margin-bottom: 20px;
+        }
+
+        .practice-item:last-child {
+            margin-bottom: 0;
+        }
+
         .timestamp {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.5);
@@ -178,6 +186,87 @@
             color: rgba(255, 100, 100, 0.7);
             font-size: 14px;
         }
+
+        /* Mobile styles for results page */
+        @media (max-width: 768px) {
+            .results-container {
+                padding: 60px 15px 20px 15px;
+            }
+            
+            .results-box {
+                padding: 25px 20px;
+            }
+            
+            .results-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .practices-text {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+            
+            .practice-item {
+                margin-bottom: 16px;
+            }
+            
+            .practice-item:last-child {
+                margin-bottom: 0;
+            }
+            
+            .timestamp {
+                font-size: 11px;
+                margin-top: 15px;
+            }
+            
+            .top-scenarios-section {
+                margin-top: 25px;
+                padding-top: 20px;
+            }
+            
+            .top-scenarios-title {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+            
+            .top-scenario-item {
+                padding: 10px;
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            
+            .top-scenario-rank {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+            
+            .top-scenario-text {
+                font-size: 14px;
+            }
+            
+            .top-scenario-count {
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+            
+            /* Language toggle - smaller and positioned outside content */
+            .language-toggle {
+                position: fixed;
+                top: 12px;
+                right: 12px;
+                margin: 0;
+                z-index: 100;
+            }
+            
+            .lang-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+                border-width: 1px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -188,9 +277,9 @@
         <div class="results-box">
             <h1 class="results-title" id="title-text">Deine Praktiken für die Zukunft</h1>
             
-            <p class="practices-text" id="practices-text">
+            <div class="practices-text" id="practices-text">
                 <!-- Practices will be inserted here -->
-            </p>
+            </div>
 
             <p class="timestamp" id="timestamp-text"></p>
 
@@ -277,7 +366,7 @@
             }
         }
 
-        // Display practices as combined paragraph
+        // Display practices as separate items with spacing
         function displayPractices(practices, lang) {
             const container = document.getElementById('practices-text');
 
@@ -288,12 +377,15 @@
                 return;
             }
 
-            // Combine all practices into one paragraph
+            // Display each practice as a separate item with spacing between
             const texts = practices.map(practice => {
                 return lang === 'de' ? (practice.de || practice.text || practice) : (practice.en || practice.text || practice);
             });
             
-            container.textContent = texts.join(' ');
+            // Create HTML with each practice in its own div
+            container.innerHTML = texts.map(text => 
+                `<div class="practice-item">${text}</div>`
+            ).join('');
         }
 
         // Update UI language

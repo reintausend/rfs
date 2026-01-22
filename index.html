@@ -621,21 +621,21 @@
             if (selectedPracticesData.length > 0) {
                 // Shuffle and take up to 3 practices
                 const shuffledPractices = shuffleArray([...selectedPracticesData]);
-                const displayPractices = shuffledPractices.slice(0, 3);
+                const displayPracticesArray = shuffledPractices.slice(0, 3);
                 
                 // Store for QR code
-                practicesForQR = displayPractices.map(p => ({
+                practicesForQR = displayPracticesArray.map(p => ({
                     de: p.practiceDE,
                     en: p.practiceEN
                 }));
                 
-                // Combine into a single paragraph (use current language)
-                const p = document.createElement('p');
-                p.className = 'practice-paragraph';
-                p.textContent = displayPractices.map(practice => 
-                    currentLanguage === 'de' ? practice.practiceDE : practice.practiceEN
-                ).join(' ');
-                practicesContainer.appendChild(p);
+                // Display each practice as a separate paragraph with spacing
+                displayPracticesArray.forEach(practice => {
+                    const p = document.createElement('p');
+                    p.className = 'practice-paragraph';
+                    p.textContent = currentLanguage === 'de' ? practice.practiceDE : practice.practiceEN;
+                    practicesContainer.appendChild(p);
+                });
             } else {
                 const p = document.createElement('p');
                 p.className = 'practice-paragraph';
