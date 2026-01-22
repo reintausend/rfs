@@ -193,12 +193,13 @@
         /* Mobile styles for results page */
         @media (max-width: 768px) {
             .results-container {
-                padding: 15px;
+                padding: 50px 15px 15px 15px;
+                position: relative;
             }
             
             .results-box {
                 padding: 25px 20px;
-                margin-top: 35px;
+                margin-top: 0;
             }
             
             .results-title {
@@ -256,13 +257,14 @@
                 padding: 3px 6px;
             }
             
-            /* Language toggle - smaller and positioned above content, right-aligned */
+            /* Language toggle - absolutely positioned above the dark box */
             .language-toggle {
-                width: 100%;
+                position: absolute;
+                top: 12px;
+                right: 15px;
+                width: auto;
                 max-width: none;
-                justify-content: flex-end;
-                margin-bottom: 0;
-                align-self: flex-end;
+                margin: 0;
             }
             
             .lang-btn {
